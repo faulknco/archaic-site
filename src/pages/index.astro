@@ -1,17 +1,201 @@
 ---
+import Layout from '../layouts/Layout.astro';
 
+const products = [
+  {
+    name: 'RoleUp',
+    category: 'SaaS',
+    description: 'AI-powered recruitment platform helping Irish businesses hire smarter and faster.',
+    status: 'Live',
+    href: 'https://roleup.ie',
+  },
+  {
+    name: 'Salaries.ie',
+    category: 'Data',
+    description: 'Real Irish salary data for professionals and employers — no paywalls, no noise.',
+    status: 'Live',
+    href: 'https://salaries.ie',
+  },
+  {
+    name: 'Government IT',
+    category: 'Contracts',
+    description: 'Modern public-sector software delivery. Faster, cheaper, and actually works — without the consultant markup.',
+    status: 'Active',
+    href: '#contact',
+  },
+  {
+    name: 'AnimStudio',
+    category: 'Creative',
+    description: 'AI-assisted animation tooling for independent creators and studios.',
+    status: 'In Development',
+    href: '#',
+  },
+  {
+    name: 'DjangoShip',
+    category: 'Developer Tools',
+    description: 'Production-ready Django SaaS boilerplate. Ship your next product in days, not months.',
+    status: 'Live',
+    href: 'https://djangoship.io',
+  },
+];
 ---
 
-<html lang="en">
-	<head>
-		<meta charset="utf-8" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="icon" href="/favicon.ico" />
-		<meta name="viewport" content="width=device-width" />
-		<meta name="generator" content={Astro.generator} />
-		<title>Astro</title>
-	</head>
-	<body>
-		<h1>Astro</h1>
-	</body>
-</html>
+<Layout>
+  <!-- Nav -->
+  <nav class="fixed top-0 left-0 right-0 z-50 border-b border-slate-800 bg-slate-950/80 backdrop-blur-sm">
+    <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+      <a href="/" class="text-white font-semibold text-lg tracking-tight">
+        Archaic <span class="text-indigo-400">Ltd</span>
+      </a>
+      <div class="flex items-center gap-8">
+        <a href="#products" class="text-slate-400 hover:text-white text-sm transition-colors">Products</a>
+        <a href="#about" class="text-slate-400 hover:text-white text-sm transition-colors">About</a>
+        <a href="#contact" class="text-sm bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-md transition-colors">Get in touch</a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="min-h-screen flex items-center pt-20">
+    <div class="max-w-6xl mx-auto px-6 py-24">
+      <div class="max-w-3xl">
+        <div class="inline-flex items-center gap-2 bg-indigo-950/50 border border-indigo-800/50 rounded-full px-4 py-1.5 mb-8">
+          <span class="w-1.5 h-1.5 rounded-full bg-indigo-400 animate-pulse"></span>
+          <span class="text-indigo-300 text-xs font-medium">Irish Technology Company — CRO 811858</span>
+        </div>
+        <h1 class="text-5xl sm:text-6xl font-bold text-white leading-tight mb-6">
+          We build software<br />
+          <span class="text-indigo-400">that works.</span>
+        </h1>
+        <p class="text-slate-400 text-xl leading-relaxed mb-10 max-w-2xl">
+          Archaic Limited builds modern products for Irish government, business, and consumers.
+          No bloat, no consultants, no excuses.
+        </p>
+        <div class="flex flex-wrap gap-4">
+          <a href="#products" class="bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-6 py-3 rounded-md transition-colors">
+            Our products
+          </a>
+          <a href="#contact" class="border border-slate-700 hover:border-slate-500 text-slate-300 hover:text-white font-medium px-6 py-3 rounded-md transition-colors">
+            Work with us
+          </a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Products -->
+  <section id="products" class="py-24 border-t border-slate-800">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="mb-16">
+        <p class="text-indigo-400 text-sm font-medium uppercase tracking-widest mb-3">What we build</p>
+        <h2 class="text-3xl sm:text-4xl font-bold text-white">Our products</h2>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {products.map((product) => (
+          <a
+            href={product.href}
+            target={product.href.startsWith('http') ? '_blank' : '_self'}
+            rel={product.href.startsWith('http') ? 'noopener noreferrer' : ''}
+            class="group block bg-slate-900 border border-slate-800 rounded-xl p-6 hover:border-indigo-700 transition-all duration-200 hover:bg-slate-800/50"
+          >
+            <div class="flex items-start justify-between mb-4">
+              <span class="text-xs font-medium text-slate-500 uppercase tracking-wider bg-slate-800 px-2.5 py-1 rounded-full">
+                {product.category}
+              </span>
+              <span class={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                product.status === 'Live'
+                  ? 'bg-emerald-950 text-emerald-400 border border-emerald-900'
+                  : product.status === 'Active'
+                  ? 'bg-indigo-950 text-indigo-400 border border-indigo-900'
+                  : 'bg-amber-950 text-amber-400 border border-amber-900'
+              }`}>
+                {product.status}
+              </span>
+            </div>
+            <h3 class="text-xl font-semibold text-white mb-2 group-hover:text-indigo-300 transition-colors">
+              {product.name}
+            </h3>
+            <p class="text-slate-400 text-sm leading-relaxed mb-4">
+              {product.description}
+            </p>
+            <span class="text-indigo-400 text-sm font-medium group-hover:translate-x-1 inline-block transition-transform">
+              Learn more →
+            </span>
+          </a>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="py-24 border-t border-slate-800">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+        <div>
+          <p class="text-indigo-400 text-sm font-medium uppercase tracking-widest mb-3">Who we are</p>
+          <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
+            Small team.<br />Big output.
+          </h2>
+          <p class="text-slate-400 leading-relaxed mb-6">
+            Archaic Limited is an Irish technology company. We're a lean, technical team that ships fast and builds for the long term.
+          </p>
+          <p class="text-slate-400 leading-relaxed mb-6">
+            We specialise in delivering government and enterprise software at a fraction of the typical consultancy cost — using AI-assisted development, modern tooling, and no unnecessary overhead.
+          </p>
+          <p class="text-slate-400 leading-relaxed">
+            Incorporated in Ireland. CRO 811858.
+          </p>
+        </div>
+        <div class="grid grid-cols-2 gap-4">
+          {[
+            { label: 'Founded', value: '2026' },
+            { label: 'Products', value: '5+' },
+            { label: 'Country', value: 'Ireland' },
+            { label: 'Status', value: 'Active' },
+          ].map(stat => (
+            <div class="bg-slate-900 border border-slate-800 rounded-xl p-6">
+              <div class="text-3xl font-bold text-indigo-400 mb-1">{stat.value}</div>
+              <div class="text-slate-500 text-sm">{stat.label}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Contact -->
+  <section id="contact" class="py-24 border-t border-slate-800">
+    <div class="max-w-6xl mx-auto px-6">
+      <div class="max-w-2xl mx-auto text-center">
+        <p class="text-indigo-400 text-sm font-medium uppercase tracking-widest mb-3">Contact</p>
+        <h2 class="text-3xl sm:text-4xl font-bold text-white mb-6">
+          Let's build something.
+        </h2>
+        <p class="text-slate-400 leading-relaxed mb-10">
+          Government contract enquiries, partnership opportunities, or just want to talk software — get in touch.
+        </p>
+        <a
+          href="mailto:hello@archaic.ie"
+          class="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white font-medium px-8 py-4 rounded-md transition-colors text-lg"
+        >
+          hello@archaic.ie
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="border-t border-slate-800 py-10">
+    <div class="max-w-6xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <p class="text-slate-500 text-sm">
+        &copy; {new Date().getFullYear()} Archaic Limited. CRO 811858. Registered in Ireland.
+      </p>
+      <div class="flex items-center gap-6">
+        <a href="#products" class="text-slate-500 hover:text-slate-300 text-sm transition-colors">Products</a>
+        <a href="#about" class="text-slate-500 hover:text-slate-300 text-sm transition-colors">About</a>
+        <a href="mailto:hello@archaic.ie" class="text-slate-500 hover:text-slate-300 text-sm transition-colors">Contact</a>
+      </div>
+    </div>
+  </footer>
+</Layout>
