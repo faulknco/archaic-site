@@ -104,13 +104,10 @@
     border-radius: 50%;
     background: radial-gradient(circle, rgba(232,228,216,0.04) 0%, transparent 70%);
     pointer-events: none;
-    transform: translate(-50%, -50%);
-    transition:
-      left 0.8s cubic-bezier(0.23, 1, 0.32, 1),
-      top  0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    left: -300px;
+    top: -300px;
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
     z-index: 5;
-    left: -9999px;
-    top: -9999px;
   }
 
   /* ── GRAIN ── */
@@ -360,18 +357,20 @@
 
     <!-- Footer -->
     <footer class="footer">
-      <span class="footer-copy">© 2024 Archaic Limited</span>
+      <span class="footer-copy">© {new Date().getFullYear()} Archaic Limited</span>
       <span class="footer-location">Dublin, Ireland</span>
     </footer>
   </div>
 
 <script>
   const glow = document.getElementById('cursor-glow');
-
-  document.addEventListener('mousemove', (e) => {
-    glow.style.left = e.clientX + 'px';
-    glow.style.top  = e.clientY + 'px';
-  });
+  if (glow) {
+    document.addEventListener('mousemove', (e) => {
+      const x = e.clientX - 300;
+      const y = e.clientY - 300;
+      glow.style.transform = `translate(${x}px, ${y}px)`;
+    });
+  }
 </script>
 
 </body>
