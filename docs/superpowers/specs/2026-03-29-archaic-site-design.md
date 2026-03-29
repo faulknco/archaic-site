@@ -16,8 +16,10 @@ A single-page identity statement for Archaic Limited. The design plays on the co
 **Tone:** Stoic Monolith
 **Palette:** Near-black background (`#0a0a0a`), warm off-white headline (`#e8e4d8`), mid-grey body (`#404040`), muted footer/eyebrow (`#222`–`#333`)
 **Typefaces:**
-- `Cinzel` (Google Fonts) — wordmark, headline. Inscriptional, Roman-derived. Carries the weight of stone.
+- `Cinzel` (Google Fonts) — headline only. Inscriptional, Roman-derived. Must be used in all-caps.
+- `Uncial Antiqua` (Google Fonts) — ghost text. Celtic/ancient feel, matches logo direction.
 - `Space Grotesk` (Google Fonts) — all other text. Clean, modern grotesque. The contrast is the point.
+- Logo wordmark — runic angular typeface, AI-generated PNG (`public/logo.png`), not a web font.
 
 ---
 
@@ -116,11 +118,30 @@ Stoic was chosen because it doesn't over-explain. The name does the work. The co
 
 ### Why Cinzel + Space Grotesk
 
-Cinzel is derived from classical Roman inscriptional lettering — it literally looks like stone carvings. Using it for the wordmark and headline creates an immediate visual connection to antiquity. Space Grotesk is clean, modern, and confident. The contrast between the two typefaces is the whole brand in microcosm: ancient name, modern craft.
+Cinzel is derived from classical Roman inscriptional lettering — it literally looks like stone carvings. Using it for the headline creates an immediate visual connection to antiquity. Space Grotesk is clean, modern, and confident. The contrast between the two typefaces is the whole brand in microcosm: ancient name, modern craft.
+
+**Note:** Cinzel must be used in all-caps (`text-transform: uppercase` or uppercase HTML). Cinzel renders mixed-case text as small caps — capital letters at full size, lowercase at reduced size — which looks like unintentional title case. The headline is set as `BUILT TO LAST. / NOT TO IMPRESS.` in the HTML for this reason.
 
 ### Why the background image is "barely visible"
 
 The image should be *felt*, not seen. A fully visible background competes with the copy. The current approach fades the image to 60% opacity then applies a heavy dark gradient overlay (96%→85% black). The result is texture and depth without distraction. The warm brown parchment tones bleed through subtly and complement the `#e8e4d8` off-white headline.
+
+### Logo — triskelion mark + runic wordmark
+
+The logo went through two rounds of iteration away from the original Roman/Cinzel direction:
+
+1. **Roman wordmark (rejected)** — Cinzel in the nav as a text wordmark. Too expected for a company named Archaic.
+2. **Triskelion mark + runic ARCHAIC (chosen)** — AI-generated in ElevenLabs nano-banana. Triple spiral (Newgrange triskelion) enclosed in a worn circle, with ARCHAIC in an angular runic typeface below.
+
+The Newgrange triple spiral was chosen deliberately: it is carved into the entrance stone at Newgrange, County Meath — a passage tomb 5,200 years old, predating Stonehenge and the Egyptian pyramids. It is genuinely Irish and genuinely archaic. The logo is stored as `public/logo.png`.
+
+**PNG gotcha:** The logo was generated with a black background. Black pixels were made transparent in post using PIL/numpy (`pixels with r,g,b < 30 → alpha = 0`) so the mark floats on the site background without a visible rectangle. `mix-blend-mode: lighten` was tried first but did not work reliably — direct alpha transparency is the correct fix.
+
+### Why Uncial Antiqua for ghost text
+
+The ghost text originally used Cinzel (Roman serif). After the logo direction shifted to runic/Celtic, Cinzel felt wrong as the ghost text typeface. A PNG image of the wordmark was tried but produced a white blob (the stone texture background of the PNG was inverted by the CSS filter). `Uncial Antiqua` (Google Fonts) is a Celtic-style display font — rounded, ancient, closer to the logo aesthetic — and renders cleanly as CSS outline text via `-webkit-text-stroke`.
+
+**Ghost text sizing gotcha:** At large `vw` sizes (22vw), 7 letters × font-size overflows the viewport width and clips letters from both ends even with `overflow: hidden` on `.page`. The text is set to `13vw` with `left: 0; right: 0; text-align: center` so all letters are always visible.
 
 ### Why parchment/papyrus over stone
 
