@@ -88,6 +88,65 @@ Animated SVG fractal noise at low opacity, shifts position every frame to simula
 
 ---
 
+## Design Rationale & Decisions
+
+This section records *why* each decision was made, so future changes start from understanding not guesswork.
+
+### Why a single page with almost nothing on it
+
+Archaic has no case studies, no client list, no testimonials yet. A services page or products page at this stage would be thin and undermine the confidence the aesthetic is projecting. A single identity statement — name, tagline, contact — says "we don't need to convince you." That restraint *is* the message. When DjangoShip or TrueClarity has real traction, a `/work` page gets added. Not before.
+
+### Why "Stoic Monolith" over other directions
+
+Three design directions were considered during brainstorming:
+- **Stoic Monolith** (chosen) — pure black, Cinzel inscriptional serif, total restraint
+- **Stone & Light** — warm parchment, Cormorant italic, classical editorial feel
+- **Ink & Gold** — dark background, amber gold accent, ancient manuscript meets dark mode
+
+Stoic Monolith was chosen because it most directly embodies the brand tension: the name is ancient, the attitude is modern and unimpressed. It doesn't explain itself.
+
+### Why "Built to last. Not to impress."
+
+Three copy tones were considered:
+- **Confrontational** — "The name is a provocation." Names the paradox head-on.
+- **Stoic** (chosen) — "Built to last. Not to impress." Doesn't explain the name. The copy embodies permanence.
+- **Wry** — "The name is the only thing we inherited." Acknowledges with a half-smile.
+
+Stoic was chosen because it doesn't over-explain. The name does the work. The copy reinforces the attitude without being clever about it.
+
+### Why Cinzel + Space Grotesk
+
+Cinzel is derived from classical Roman inscriptional lettering — it literally looks like stone carvings. Using it for the wordmark and headline creates an immediate visual connection to antiquity. Space Grotesk is clean, modern, and confident. The contrast between the two typefaces is the whole brand in microcosm: ancient name, modern craft.
+
+### Why the background image is "barely visible"
+
+The image should be *felt*, not seen. A fully visible background competes with the copy. The current approach fades the image to 60% opacity then applies a heavy dark gradient overlay (96%→85% black). The result is texture and depth without distraction. The warm brown parchment tones bleed through subtly and complement the `#e8e4d8` off-white headline.
+
+### Why parchment/papyrus over stone
+
+The background went through three iterations:
+1. **Wrong Unsplash photo** — accidentally downloaded a man at a workbench
+2. **Paint swirl** — colourful, too visible, wrong mood entirely
+3. **Aged parchment** (final) — AI-generated, warm dark browns, torn edges, fibrous texture
+
+Parchment was chosen because it's warmer than grey stone and complements the off-white headline colour. It also reinforces the manuscript/archival quality of the brand — something that has survived time.
+
+### Why no form, no button — just a mailto link
+
+A contact form adds complexity (server, spam, validation) and signals "we get a lot of enquiries." A plain mailto link signals "just talk to us." For a company at this stage, direct contact is better than managed contact.
+
+### The body copy colour
+
+Launched at `#484848` — too dark against the near-black background, body copy was nearly invisible. Updated to `#686868` so it reads as a supporting line, not an afterthought.
+
+### Trade-offs accepted
+
+- **Cold discovery is hard** — a visitor who doesn't already know Archaic may not understand what it does. This is acceptable at the current stage. The site is for people who look you up, not for strangers finding you via search.
+- **No SEO beyond meta description** — no blog, no content, no long-tail keywords. Correct for now; revisit when content becomes part of distribution strategy.
+- **Single typeface pair forever** — Cinzel is distinctive but also legible only at display sizes. This limits how much text the site can ever carry. That constraint is a feature, not a bug.
+
+---
+
 ## What Gets Built Later (Not Now)
 
 - `/work` page — when DjangoShip or TrueClarity has real traction to show
