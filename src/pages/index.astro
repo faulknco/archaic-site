@@ -68,15 +68,9 @@
   /* ── GHOST TEXT (A) ── */
   .ghost-text {
     position: absolute;
-    font-family: 'Cinzel', serif;
-    font-size: 22vw;
-    font-weight: 900;
-    color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,0.045);
-    letter-spacing: 0.08em;
-    right: 0;
-    bottom: -0.15em;
-    line-height: 1;
+    width: 72vw;
+    right: -2vw;
+    bottom: -2vw;
     pointer-events: none;
     user-select: none;
     z-index: 1;
@@ -84,6 +78,7 @@
     transform: translateY(30px);
     animation: ghostReveal 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     animation-delay: 0.8s;
+    filter: brightness(0) invert(1);
   }
 
   @keyframes ghostReveal {
@@ -92,7 +87,7 @@
       transform: translateY(30px);
     }
     to {
-      opacity: 1;
+      opacity: 0.045;
       transform: translateY(0);
     }
   }
@@ -309,8 +304,7 @@
     }
 
     .ghost-text {
-      font-size: 35vw;
-      -webkit-text-stroke: 1px rgba(255,255,255,0.03);
+      width: 90vw;
     }
 
     #cursor-glow {
@@ -332,7 +326,7 @@
     <div class="bg-image" aria-hidden="true"></div>
 
     <!-- Ghost text (A) -->
-    <div class="ghost-text" aria-hidden="true">ARCHAIC</div>
+    <img class="ghost-text" src="/wordmark.png" alt="" aria-hidden="true" />
 
     <!-- Nav -->
     <nav class="nav">
