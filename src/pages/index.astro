@@ -315,6 +315,13 @@
     text-transform: uppercase;
   }
 
+  .footer-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+  }
+
   /* ── SHARED ANIMATION ── */
   @keyframes fadeUp {
     from {
@@ -348,6 +355,13 @@
 
     .footer {
       padding: 20px 28px;
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .footer-meta {
+      align-items: flex-start;
     }
 
     .ghost-text {
@@ -405,7 +419,10 @@
     <!-- Footer -->
     <footer class="footer">
       <span class="footer-copy">© {new Date().getFullYear()} Archaic Limited</span>
-      <span class="footer-location">Dublin, Ireland</span>
+      <div class="footer-meta">
+        <span class="footer-location">Registered in Ireland · Co. No. 811858</span>
+        <span class="footer-location">7 Marlmount Close, Dundalk, Co. Louth</span>
+      </div>
     </footer>
   </div>
 
