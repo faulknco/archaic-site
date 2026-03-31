@@ -1,4 +1,15 @@
 ---
+import { getCollection, render } from 'astro:content';
+
+const articles = (await getCollection('journal'))
+  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
+
+const rendered = await Promise.all(
+  articles.map(async (article) => {
+    const { Content } = await render(article);
+    return { article, Content };
+  })
+);
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -259,6 +270,46 @@
     font-style: italic;
   }
 
+  /* ── JOURNAL ARTICLE ── */
+  .journal-article {
+    margin-bottom: 64px;
+  }
+
+  .journal-article:last-child {
+    margin-bottom: 0;
+  }
+
+  .journal-article-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(18px, 2.5vw, 24px);
+    font-weight: 400;
+    color: #e8e4d8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .journal-article-date {
+    font-size: 11px;
+    color: #333;
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+  }
+
+  .journal-article-body {
+    font-size: 14px;
+    color: #686868;
+    line-height: 1.85;
+  }
+
+  .journal-article-body p {
+    margin-bottom: 16px;
+  }
+
+  .journal-article-body p:last-child {
+    margin-bottom: 0;
+  }
+
   /* ── CONTACT CTA ── */
   .contact {
     padding: 80px 0 40px;
@@ -419,7 +470,19 @@
     <!-- Journal section -->
     <section class="section">
       <p class="section-label">Journal</p>
-      <p class="journal-empty reveal">Nothing yet. Articles will appear here.</p>
+      {rendered.length === 0 ? (
+        <p class="journal-empty reveal">Nothing yet. Articles will appear here.</p>
+      ) : (
+        rendered.map(({ article, Content }) => (
+          <article id={article.data.slug} class="journal-article reveal">
+            <h2 class="journal-article-title">{article.data.title}</h2>
+            <p class="journal-article-date">{article.data.date.toLocaleDateString('en-IE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+            <div class="journal-article-body">
+              <Content />
+            </div>
+          </article>
+        ))
+      )}
     </section>
 
     <!-- Contact CTA -->
