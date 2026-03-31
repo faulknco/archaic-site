@@ -1,0 +1,446 @@
+---
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Deeper — Archaic</title>
+  <meta name="description" content="What Archaic builds. Case studies, articles, and thinking from a Dublin software studio." />
+  <link rel="icon" type="image/png" href="/logo.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
+  <style>
+  *, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  html, body {
+    min-height: 100%;
+    background: #060606;
+    color: #888;
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  /* ── BACKGROUND IMAGE ── */
+  .bg-image {
+    position: fixed;
+    inset: 0;
+    background-image: url('/stone.jpg');
+    background-size: cover;
+    background-position: center 40%;
+    opacity: 0.6;
+    z-index: 0;
+  }
+
+  .bg-image::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      135deg,
+      rgba(6,6,6,0.96) 0%,
+      rgba(6,6,6,0.92) 40%,
+      rgba(6,6,6,0.85) 100%
+    );
+  }
+
+  /* ── CURSOR GLOW ── */
+  #cursor-glow {
+    position: fixed;
+    width: 600px;
+    height: 600px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(232,228,216,0.04) 0%, transparent 70%);
+    pointer-events: none;
+    left: -300px;
+    top: -300px;
+    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
+    z-index: 5;
+  }
+
+  /* ── CONTENT WRAPPER ── */
+  .content {
+    position: relative;
+    z-index: 10;
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 0 56px;
+  }
+
+  /* ── NAV ── */
+  .nav {
+    padding: 32px 56px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+  }
+
+  .nav-logo {
+    display: block;
+    height: 72px;
+    width: auto;
+  }
+
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .nav-link {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #3a3a3a;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .nav-link:hover {
+    color: #888;
+  }
+
+  .nav-contact {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #3a3a3a;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .nav-contact:hover {
+    color: #888;
+  }
+
+  /* ── PAGE HEADER ── */
+  .page-header {
+    padding: 120px 0 80px;
+  }
+
+  .page-title {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(28px, 4vw, 48px);
+    font-weight: 400;
+    color: #e8e4d8;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+  }
+
+  /* ── SECTION ── */
+  .section {
+    padding: 60px 0;
+  }
+
+  .section-label {
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: #2e2e2e;
+    margin-bottom: 48px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: #242424;
+    flex-shrink: 0;
+  }
+
+  /* ── CASE STUDY ── */
+  .case-study {
+    margin-bottom: 64px;
+  }
+
+  .case-study:last-child {
+    margin-bottom: 0;
+  }
+
+  .case-study-name {
+    font-family: 'Cinzel', serif;
+    font-size: clamp(18px, 2.5vw, 24px);
+    font-weight: 400;
+    color: #e8e4d8;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .case-study-tagline {
+    font-size: 13px;
+    color: #686868;
+    margin-bottom: 24px;
+    font-style: italic;
+  }
+
+  .case-study-detail {
+    font-size: 13px;
+    color: #686868;
+    line-height: 1.75;
+    margin-bottom: 8px;
+  }
+
+  .case-study-detail strong {
+    color: #555;
+    font-weight: 500;
+    display: inline-block;
+    min-width: 100px;
+  }
+
+  .case-study-tech {
+    font-size: 12px;
+    color: #444;
+    margin-top: 16px;
+    letter-spacing: 0.5px;
+  }
+
+  .case-study-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #4a4a4a;
+    text-decoration: none;
+    margin-top: 20px;
+    transition: color 0.3s;
+  }
+
+  .case-study-link:hover {
+    color: #888;
+  }
+
+  .case-study-link .arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  .case-study-link:hover .arrow {
+    transform: translateX(6px);
+  }
+
+  /* ── JOURNAL (empty state) ── */
+  .journal-empty {
+    font-size: 13px;
+    color: #333;
+    font-style: italic;
+  }
+
+  /* ── CONTACT CTA ── */
+  .contact {
+    padding: 80px 0 40px;
+    border-top: 1px solid #111;
+  }
+
+  .contact-text {
+    font-size: 14px;
+    color: #686868;
+    line-height: 1.75;
+  }
+
+  .contact-link {
+    color: #4a4a4a;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .contact-link:hover {
+    color: #888;
+  }
+
+  /* ── FOOTER ── */
+  .footer {
+    padding: 22px 56px;
+    border-top: 1px solid #0f0f0f;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: relative;
+    z-index: 10;
+    margin-top: 80px;
+  }
+
+  .footer-copy,
+  .footer-location {
+    font-size: 9px;
+    letter-spacing: 1.5px;
+    color: #222;
+    text-transform: uppercase;
+  }
+
+  /* ── SCROLL REVEAL ── */
+  .reveal {
+    opacity: 0;
+    transform: translateY(20px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 640px) {
+    .nav {
+      padding: 24px 28px;
+    }
+
+    .content {
+      padding: 0 28px;
+    }
+
+    .page-header {
+      padding: 80px 0 48px;
+    }
+
+    .footer {
+      padding: 20px 28px;
+    }
+
+    #cursor-glow {
+      display: none;
+    }
+
+    .nav-links {
+      gap: 20px;
+    }
+  }
+  </style>
+</head>
+<body>
+
+  <!-- Cursor glow -->
+  <div id="cursor-glow" aria-hidden="true"></div>
+
+  <!-- Background image -->
+  <div class="bg-image" aria-hidden="true"></div>
+
+  <!-- Nav -->
+  <nav class="nav">
+    <a href="/">
+      <img class="nav-logo" src="/logo.png" alt="Archaic" />
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="/deeper">Deeper</a>
+      <a class="nav-contact" href="mailto:hello@archaic.ie">hello@archaic.ie</a>
+    </div>
+  </nav>
+
+  <div class="content">
+
+    <!-- Page header -->
+    <header class="page-header">
+      <h1 class="page-title">DEEPER</h1>
+    </header>
+
+    <!-- Work section -->
+    <section class="section">
+      <p class="section-label">Work</p>
+
+      <article id="djangoship" class="case-study reveal">
+        <h2 class="case-study-name">DJANGOSHIP</h2>
+        <p class="case-study-tagline">SaaS boilerplate for European startups</p>
+        <p class="case-study-detail"><strong>What it is</strong> — Production-ready Django template sold on Gumroad. Ships with Stripe payments, GDPR compliance, team management, and one-click Railway deploy.</p>
+        <p class="case-study-detail"><strong>What it does</strong> — Authentication with email and OAuth, subscription billing, API tokens with quota tracking, cookie consent and data export, 150+ automated tests.</p>
+        <p class="case-study-tech">Django · Stripe · PostgreSQL · Railway · GitHub Actions</p>
+        <a class="case-study-link" href="https://faulknco.gumroad.com/l/djangoship" target="_blank" rel="noopener noreferrer">
+          View on Gumroad <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+
+      <article id="roleup" class="case-study reveal">
+        <h2 class="case-study-name">ROLEUP</h2>
+        <p class="case-study-tagline">Irish job board with recruiter accountability</p>
+        <p class="case-study-detail"><strong>What it is</strong> — Privacy-first job board where every company gets a public response score based on how they treat candidates.</p>
+        <p class="case-study-detail"><strong>What it does</strong> — Recruiter response scoring, 22 salary data ingestion pipelines, benchmarking by role and county, email alerts, recruiter tier system.</p>
+        <p class="case-study-tech">Django · HTMX · Stripe · PostgreSQL · Railway</p>
+        <a class="case-study-link" href="https://www.roleup.ie" target="_blank" rel="noopener noreferrer">
+          Visit RoleUp <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+
+      <article id="trueclarity" class="case-study reveal">
+        <h2 class="case-study-name">TRUECLARITY</h2>
+        <p class="case-study-tagline">AI readiness toolkit for Irish SMEs</p>
+        <p class="case-study-detail"><strong>What it is</strong> — Assessment tool and resource hub that helps Irish business owners understand and implement AI, with GDPR compliance and Irish grants guidance built in.</p>
+        <p class="case-study-detail"><strong>What it does</strong> — AI readiness assessment with personalised scoring, sector-specific playbooks, 50+ prompts for Irish business contexts, vetted tool directory.</p>
+        <p class="case-study-tech">Next.js · Supabase · Stripe · Vercel</p>
+        <a class="case-study-link" href="https://www.trueclarity.ie" target="_blank" rel="noopener noreferrer">
+          Visit TrueClarity <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+
+      <article id="salaries-ie" class="case-study reveal">
+        <h2 class="case-study-name">SALARIES.IE</h2>
+        <p class="case-study-tagline">1,019 salary pages from Irish open data</p>
+        <p class="case-study-detail"><strong>What it is</strong> — Programmatic SEO site generating salary comparison pages from CSO open data, broken down by sector, county, and demographics.</p>
+        <p class="case-study-detail"><strong>What it does</strong> — Automated data pipelines from the Central Statistics Office, per-county and per-sector salary breakdowns, 1,019 statically generated pages.</p>
+        <p class="case-study-tech">Astro · Cloudflare Pages · CSO Open Data API</p>
+        <a class="case-study-link" href="https://salaries.ie" target="_blank" rel="noopener noreferrer">
+          Visit salaries.ie <span class="arrow" aria-hidden="true">→</span>
+        </a>
+      </article>
+    </section>
+
+    <!-- Journal section -->
+    <section class="section">
+      <p class="section-label">Journal</p>
+      <p class="journal-empty reveal">Nothing yet. Articles will appear here.</p>
+    </section>
+
+    <!-- Contact CTA -->
+    <section class="contact reveal">
+      <p class="contact-text">
+        If any of this is relevant to what you're building —
+        <a class="contact-link" href="mailto:hello@archaic.ie">hello@archaic.ie<span class="arrow" aria-hidden="true"> →</span></a>
+      </p>
+    </section>
+
+  </div>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <span class="footer-copy">© {new Date().getFullYear()} Archaic Limited</span>
+    <span class="footer-location">Dublin, Ireland</span>
+  </footer>
+
+  <script>
+    // Cursor glow
+    const glow = document.getElementById('cursor-glow');
+    if (glow) {
+      document.addEventListener('mousemove', (e) => {
+        const x = e.clientX - 300;
+        const y = e.clientY - 300;
+        glow.style.transform = `translate(${x}px, ${y}px)`;
+      });
+    }
+
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+
+    reveals.forEach((el) => observer.observe(el));
+  </script>
+
+</body>
+</html>
