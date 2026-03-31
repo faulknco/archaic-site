@@ -25,3 +25,5 @@ pnpm-debug.log*
 
 # brainstorm directory
 .superpowers/
+.claude/
+.playwright-cli/
