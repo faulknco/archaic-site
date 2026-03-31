@@ -166,6 +166,25 @@
     color: #888;
   }
 
+  .nav-links {
+    display: flex;
+    align-items: center;
+    gap: 32px;
+  }
+
+  .nav-link {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: #3a3a3a;
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .nav-link:hover {
+    color: #888;
+  }
+
   /* ── HERO ── */
   .hero {
     display: flex;
@@ -339,7 +358,10 @@
     <!-- Nav -->
     <nav class="nav">
       <img class="nav-logo" src="/logo.png" alt="Archaic" />
-      <a class="nav-contact" href="mailto:hello@archaic.ie">hello@archaic.ie</a>
+      <div class="nav-links">
+        <a class="nav-link" href="/deeper">Deeper</a>
+        <a class="nav-contact" href="mailto:hello@archaic.ie">hello@archaic.ie</a>
+      </div>
     </nav>
 
     <!-- Hero -->
