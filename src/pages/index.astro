@@ -8,6 +8,8 @@
   <title>Archaic — Software Studio, Dublin</title>
   <meta name="description" content="Archaic Limited builds software that endures. No trends. No bloat. Just work that holds." />
 
+  <link rel="canonical" href="https://archaic.ie/" />
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -25,6 +27,9 @@
   <meta name="twitter:title" content="Archaic — Software Studio, Dublin" />
   <meta name="twitter:description" content="Archaic Limited builds software that endures. No trends. No bloat. Just work that holds." />
   <meta name="twitter:image" content="https://archaic.ie/og.png" />
+
+  <!-- Structured data -->
+  <script type="application/ld+json" is:inline>{"@context":"https://schema.org","@type":"Organization","name":"Archaic Limited","alternateName":"Archaic","url":"https://archaic.ie/","logo":"https://archaic.ie/apple-touch-icon.png","email":"hello@archaic.ie","foundingDate":"2026-03-25","areaServed":"IE"}</script>
 
   <!-- Analytics -->
 
@@ -374,6 +379,24 @@
 
     .nav-links {
       gap: 20px;
+    }
+  }
+
+  /* ── ACCESSIBILITY ── */
+  a:focus-visible {
+    outline: 1px solid #8a8a8a;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .reveal {
+      opacity: 1;
+      transform: none;
     }
   }
 </style>

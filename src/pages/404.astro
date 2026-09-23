@@ -376,7 +376,25 @@
       gap: 20px;
     }
   }
-  </style>
+
+  /* ── ACCESSIBILITY ── */
+  a:focus-visible {
+    outline: 1px solid #8a8a8a;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
   <!-- Privacy-friendly analytics by Plausible -->
   <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js"></script>
   <script>

@@ -19,6 +19,8 @@ const rendered = await Promise.all(
   <title>Deeper — Archaic</title>
   <meta name="description" content="What Archaic builds. Case studies, articles, and thinking from a Dublin software studio." />
 
+  <link rel="canonical" href="https://archaic.ie/deeper/" />
+
   <!-- Favicon -->
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
@@ -403,7 +405,25 @@ const rendered = await Promise.all(
       gap: 20px;
     }
   }
-  </style>
+
+  /* ── ACCESSIBILITY ── */
+  a:focus-visible {
+    outline: 1px solid #8a8a8a;
+    outline-offset: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .reveal {
+      opacity: 1;
+      transform: none;
+    }
+  }
+</style>
   <!-- Privacy-friendly analytics by Plausible -->
   <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js"></script>
   <script>
