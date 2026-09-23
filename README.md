@@ -1,43 +1,40 @@
-# Astro Starter Kit: Minimal
+# archaic.ie
 
-```sh
-npm create astro@latest -- --template minimal
+Company site for Archaic Limited, a software studio in Dublin.
+
+Three static pages and a short journal, built with Astro and deployed to Cloudflare Pages on every push to `main`.
+
+## Pages
+
+- `/` — the brand statement
+- `/deeper` — case studies of live products, plus journal articles rendered from `src/content/journal/`
+- `/services` — what the studio does, in broad terms
+- `/404` — custom not-found page
+
+Each page is a self-contained `.astro` file with its own styles and scripts. There is no shared layout on purpose.
+
+## Run
+
+```bash
+npm install
+npm run dev       # http://localhost:4321
+npm run build     # output in dist/
+npm run preview
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
+No secrets are needed to build. `.env.local` holds only a Cloudflare DNS token reference for DNS changes, not for the site.
 
-## 🚀 Project Structure
+## Content
 
-Inside of your Astro project, you'll see the following folders and files:
+Journal articles are Markdown files in `src/content/journal/` with `title`, `date`, `slug` and `description` frontmatter. They render on `/deeper` on the next build. The schema is in `src/content.config.ts`.
 
-```text
-/
-├── public/
-├── src/
-│   └── pages/
-│       └── index.astro
-└── package.json
-```
+## Conventions
 
-Astro looks for `.astro` or `.md` files in the `src/pages/` directory. Each page is exposed as a route based on its file name.
+- Cinzel headings are uppercase in both HTML and CSS.
+- No prices, rates, timelines or headline figures anywhere on the site.
+- No physical address on the site. Company name and number only.
+- Article voice: short declarative paragraphs, no bullet lists, no calls to action.
 
-There's nothing special about `src/components/`, but that's where we like to put any Astro/React/Vue/Svelte/Preact components.
+## Deploy
 
-Any static assets, like images, can be placed in the `public/` directory.
-
-## 🧞 Commands
-
-All commands are run from the root of the project, from a terminal:
-
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
-
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+Cloudflare Pages builds `main` automatically. Response headers live in `public/_headers`. CI (`.github/workflows/ci.yml`) builds the site and checks links on pull requests and pushes to `main`.
