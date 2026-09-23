@@ -12,8 +12,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: npm
@@ -26,6 +26,7 @@ jobs:
             --root-dir "${{ github.workspace }}/dist"
             --exclude-path dist/_astro
             --exclude 'mailto:'
+            --exclude 'https://archaic.ie'
             --accept 200,204,301,302,307,308,403,429
             --no-progress
             "dist/**/*.html"
