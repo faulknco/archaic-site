@@ -33,3 +33,6 @@ pnpm-debug.log*
 .dolt/
 *.db
 .beads-credential-key
+
+# parity screenshots (local acceptance only)
+.parity/

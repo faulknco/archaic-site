@@ -1,0 +1,51 @@
+---
+import Base from '../../layouts/Base.astro';
+---
+<Base
+  title="Forge — Archaic"
+  description="Working pieces from the Archaic forge. Real models, running live in the browser, built from the studio's own code."
+  path="/forge/"
+  current="forge"
+>
+  <div class="content">
+    <header class="page-header">
+      <h1 class="page-title">FORGE</h1>
+      <p class="page-intro">Working pieces. Each one is a real model, running live, built from the studio's own code.</p>
+    </header>
+
+    <section class="section">
+      <p class="section-label">Pieces</p>
+
+      <article class="piece reveal">
+        <h2 class="piece-name"><a class="piece-link" href="/forge/spin/">SPIN</a></h2>
+        <p class="piece-tagline">A two-dimensional Ising model. Scroll is temperature.</p>
+        <p class="piece-body">Hot at the top, frozen at the bottom, and the critical point in between. This page flashes; it asks before it starts.</p>
+        <a class="piece-cta" href="/forge/spin/">Open Spin <span class="arrow" aria-hidden="true">→</span></a>
+      </article>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .content { position: relative; z-index: 10; max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter); }
+  .page-header { padding: var(--s-120) 0 var(--s-40); }
+  .page-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 400; color: var(--text-display); letter-spacing: var(--ls-4); text-transform: uppercase; }
+  .page-intro { font-size: var(--fs-14); color: var(--text); line-height: var(--lh-body); max-width: 520px; margin-top: var(--s-24); }
+  .section { padding: var(--s-60) 0; }
+  .section-label { font-size: var(--fs-9); letter-spacing: var(--ls-3); text-transform: uppercase; color: var(--text-label); margin-bottom: var(--s-48); display: flex; align-items: center; gap: var(--s-14); }
+  .section-label::before { content: ''; display: block; width: 28px; height: 1px; background: var(--rule-label); flex-shrink: 0; }
+  .piece { margin-bottom: var(--s-72); }
+  .piece:last-child { margin-bottom: 0; }
+  .piece-name { font-family: var(--font-display); font-size: var(--fs-h2); font-weight: 400; letter-spacing: var(--ls-2); text-transform: uppercase; margin-bottom: var(--s-6); }
+  .piece-link { color: var(--text-display); text-decoration: none; }
+  .piece-tagline { font-size: var(--fs-13); color: var(--text); margin-bottom: var(--s-24); font-style: italic; }
+  .piece-body { font-size: var(--fs-13); color: var(--text); line-height: var(--lh-body); margin-bottom: var(--s-24); }
+  .piece-cta { display: inline-flex; align-items: center; gap: var(--s-10); font-size: var(--fs-10); letter-spacing: var(--ls-2); text-transform: uppercase; color: var(--text-cta); text-decoration: none; transition: color 0.3s; }
+  .piece-cta:hover { color: var(--text-hover); }
+  .piece-cta .arrow { display: inline-block; transition: transform 0.3s ease; }
+  .piece-cta:hover .arrow { transform: translateX(6px); }
+  @media (max-width: 640px) {
+    .content { padding: 0 var(--gutter-mobile); }
+    .page-header { padding: var(--s-80) 0 var(--s-48); }
+  }
+</style>

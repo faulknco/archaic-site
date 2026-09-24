@@ -38,6 +38,16 @@ self.onmessage = async (e) => {
       const copy = new Int8Array(spinsView()); // copy out of WASM memory
       self.postMessage({ type: 'frame', spins: copy.buffer }, [copy.buffer]);
     }
+    if (msg.type === 'reset') {
+      if (!sim) return;
+      // Re-draw every spin from the instance's own RNG. No re-init() and no
+      // second IsingWasm, so the WASM memory (and spinsView) stays valid and
+      // nothing leaks. The frame is flagged so the page can count resets even
+      // while it is paused and asking for no ticks.
+      sim.randomise();
+      const copy = new Int8Array(spinsView());
+      self.postMessage({ type: 'frame', spins: copy.buffer, reset: true }, [copy.buffer]);
+    }
   } catch (err) {
     self.postMessage({ type: 'error', message: String(err && err.message || err) });
   }

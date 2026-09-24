@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { temperatureFor, CONTROL_POINTS } from '../public/forge/spin/tmap.js';
+import { temperatureFor, CONTROL_POINTS, readoutFor, T_HOT, T_COLD } from '../public/forge/spin/tmap.js';
 
 const close = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
 
@@ -31,4 +31,22 @@ test('clamps outside [0,1]', () => {
 test('the critical point sits inside the middle tenth of scroll', () => {
   const tc = 2.269;
   assert.ok(temperatureFor(0.45) > tc && temperatureFor(0.55) < tc);
+});
+
+test('readout words straddle the critical point', () => {
+  assert.equal(readoutFor(T_HOT), 'HOT');
+  assert.equal(readoutFor(2.269), 'NEAR CRITICAL');
+  assert.equal(readoutFor(T_COLD), 'COLD');
+});
+
+test('the readout bar spans the full scroll and never leaves it', () => {
+  // The marker is positioned as (T_HOT - T) / (T_HOT - T_COLD); temperatureFor
+  // is clamped, so the bar must read 0% at the top and 100% at the bottom.
+  const pos = (s) => (T_HOT - temperatureFor(s)) / (T_HOT - T_COLD);
+  assert.equal(pos(0), 0);
+  assert.equal(pos(1), 1);
+  for (let i = 0; i <= 100; i++) {
+    const p = pos(i / 100);
+    assert.ok(p >= 0 && p <= 1, `marker off the bar at s=${i / 100}: ${p}`);
+  }
 });

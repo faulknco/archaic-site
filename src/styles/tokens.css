@@ -1,0 +1,74 @@
+/* src/styles/tokens.css
+   The only file that defines a colour, a font stack, a size, a tracking or a space.
+   Greys are neutral OKLCH (chroma 0); each L is the exact lightness of the hex it
+   replaced, so rendering is unchanged. Mapping (old hex → token):
+     #060606 --grey-12   #0a0a0a --grey-14   #0f0f0f --grey-17   #111    --grey-18
+     #151515 --grey-20   #222    --grey-25   #242424 --grey-26   #2e2e2e --grey-30
+     #333    --grey-32   #3a3a3a --grey-35   #4a4a4a --grey-41   #555    --grey-45
+     #686868 --grey-52   #888    --grey-63   #e8e4d8 --bone
+   Merged: #444 → --grey-41 (6/255 apart, one use), #8a8a8a → --grey-63 (2/255 apart).
+   Dropped: #b0b0b0 (spin caption hover; Task 12 replaced that caption). */
+:root {
+  /* scale */
+  --grey-12: oklch(12.21% 0 0);
+  --grey-14: oklch(14.48% 0 0);
+  --grey-17: oklch(16.84% 0 0);
+  --grey-18: oklch(17.76% 0 0);
+  --grey-20: oklch(19.57% 0 0);
+  --grey-25: oklch(25.20% 0 0);
+  --grey-26: oklch(26.03% 0 0);
+  --grey-30: oklch(30.12% 0 0);
+  --grey-32: oklch(32.11% 0 0);
+  --grey-35: oklch(34.85% 0 0);
+  --grey-41: oklch(40.91% 0 0);
+  --grey-45: oklch(44.95% 0 0);
+  --grey-52: oklch(51.73% 0 0);
+  --grey-63: oklch(62.68% 0 0);
+  --bone:    oklch(91.87% 0.0166 91.6);
+  /* rgb triplets for the few alpha uses (gradients, glow, ghost stroke) */
+  --ground-rgb: 6 6 6;
+  --bone-rgb: 232 228 216;
+  --white-rgb: 255 255 255;
+
+  /* roles */
+  --ground:       var(--grey-12);
+  --panel:        var(--grey-14);
+  --panel-border: var(--grey-20);
+  --rule:         var(--grey-17);
+  --rule-strong:  var(--grey-18);
+  --rule-label:   var(--grey-26);
+  --text-footer:  var(--grey-25);
+  --text-label:   var(--grey-30);
+  --text-faint:   var(--grey-32);
+  --text-nav:     var(--grey-35);
+  --text-cta:     var(--grey-41);
+  /* Captions (/deeper's tech lines) were #444 and merged into --grey-41 alongside
+     --text-cta. Same value today, separate role, so restyling a call to action
+     never drags a caption with it. */
+  --text-caption: var(--grey-41);
+  --text-strong:  var(--grey-45);
+  --text:         var(--grey-52);
+  --text-hover:   var(--grey-63);
+  --focus:        var(--grey-63);
+  --text-display: var(--bone);
+
+  /* type — the stacks come from the Astro Fonts API (astro.config.mjs), which
+     appends a metric-matched fallback family to each one. */
+  --font-display: var(--font-cinzel);
+  --font-body:    var(--font-grotesk);
+  --font-ghost:   var(--font-uncial);
+  --fs-9: 9px;  --fs-10: 10px; --fs-11: 11px; --fs-12: 12px; --fs-13: 13px; --fs-14: 14px;
+  --fs-h2:   clamp(18px, 2.5vw, 24px);
+  --fs-h1:   clamp(28px, 4vw, 48px);
+  --fs-hero: clamp(32px, 5vw, 56px);
+  --lh-body: 1.75; --lh-article: 1.85; --lh-caption: 1.7;
+  --ls-05: 0.5px; --ls-1: 1px; --ls-15: 1.5px; --ls-2: 2px; --ls-3: 3px; --ls-4: 4px;
+
+  /* space — the values in use today; new work picks from this list */
+  --s-6: 6px;   --s-8: 8px;   --s-10: 10px; --s-14: 14px; --s-16: 16px; --s-20: 20px;
+  --s-22: 22px; --s-24: 24px; --s-28: 28px; --s-32: 32px; --s-40: 40px; --s-44: 44px;
+  --s-48: 48px; --s-56: 56px; --s-60: 60px; --s-64: 64px; --s-72: 72px; --s-80: 80px; --s-120: 120px;
+  --gutter: var(--s-56);
+  --gutter-mobile: var(--s-28);
+  --measure: 720px;
+}

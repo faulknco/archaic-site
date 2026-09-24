@@ -1,439 +1,12 @@
 ---
+import Base from '../layouts/Base.astro';
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Services — Archaic</title>
-  <meta name="description" content="Software services from a Dublin studio. Reviews, advisory, and builds. Scoped in writing, delivered by email. No calls, no day rates." />
-
-  <link rel="canonical" href="https://archaic.ie/services/" />
-
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
-
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://archaic.ie/services" />
-  <meta property="og:title" content="Services — Archaic" />
-  <meta property="og:description" content="Software services from a Dublin studio. Reviews, advisory, and builds. Scoped in writing, delivered by email. No calls, no day rates." />
-  <meta property="og:image" content="https://archaic.ie/og.png" />
-
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Services — Archaic" />
-  <meta name="twitter:description" content="Software services from a Dublin studio. Reviews, advisory, and builds. Scoped in writing, delivered by email. No calls, no day rates." />
-  <meta name="twitter:image" content="https://archaic.ie/og.png" />
-
-  <!-- Analytics -->
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Space+Grotesk:wght@300;400;500;700&display=swap" rel="stylesheet" />
-  <style>
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  html, body {
-    min-height: 100%;
-    background: #060606;
-    color: #888;
-    font-family: 'Space Grotesk', sans-serif;
-  }
-
-  /* ── BACKGROUND IMAGE ── */
-  .bg-image {
-    position: fixed;
-    inset: 0;
-    background-image: url('/stone.webp');
-    background-size: cover;
-    background-position: center 40%;
-    opacity: 0.6;
-    z-index: 0;
-  }
-
-  .bg-image::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(6,6,6,0.96) 0%,
-      rgba(6,6,6,0.92) 40%,
-      rgba(6,6,6,0.85) 100%
-    );
-  }
-
-  /* ── CURSOR GLOW ── */
-  #cursor-glow {
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(232,228,216,0.04) 0%, transparent 70%);
-    pointer-events: none;
-    left: -300px;
-    top: -300px;
-    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-    z-index: 5;
-  }
-
-  /* ── CONTENT WRAPPER ── */
-  .content {
-    position: relative;
-    z-index: 10;
-    max-width: 720px;
-    margin: 0 auto;
-    padding: 0 56px;
-  }
-
-  /* ── NAV ── */
-  .nav {
-    padding: 32px 56px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 10;
-  }
-
-  .nav-logo {
-    display: block;
-    height: 72px;
-    width: auto;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-  }
-
-  .nav-link {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #3a3a3a;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-
-  .nav-link:hover {
-    color: #888;
-  }
-
-  .nav-contact {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #3a3a3a;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-
-  .nav-contact:hover {
-    color: #888;
-  }
-
-  /* ── PAGE HEADER ── */
-  .page-header {
-    padding: 120px 0 40px;
-  }
-
-  .page-title {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(28px, 4vw, 48px);
-    font-weight: 400;
-    color: #e8e4d8;
-    letter-spacing: 4px;
-    text-transform: uppercase;
-  }
-
-  .page-intro {
-    font-size: 14px;
-    color: #686868;
-    line-height: 1.75;
-    max-width: 520px;
-    margin-top: 24px;
-  }
-
-  /* ── SECTION ── */
-  .section {
-    padding: 60px 0;
-  }
-
-  .section-label {
-    font-size: 9px;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    color: #2e2e2e;
-    margin-bottom: 48px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .section-label::before {
-    content: '';
-    display: block;
-    width: 28px;
-    height: 1px;
-    background: #242424;
-    flex-shrink: 0;
-  }
-
-  /* ── SERVICE BLOCK ── */
-  .service {
-    margin-bottom: 72px;
-  }
-
-  .service:last-child {
-    margin-bottom: 0;
-  }
-
-  .service-name {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(18px, 2.5vw, 24px);
-    font-weight: 400;
-    color: #e8e4d8;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  .service-tagline {
-    font-size: 13px;
-    color: #686868;
-    margin-bottom: 24px;
-    font-style: italic;
-  }
-
-  .service-body {
-    font-size: 13px;
-    color: #686868;
-    line-height: 1.75;
-    margin-bottom: 24px;
-  }
-
-  .service-cta {
-    display: inline-flex;
-    align-items: center;
-    gap: 10px;
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #4a4a4a;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-
-  .service-cta:hover {
-    color: #888;
-  }
-
-  .service-cta .arrow {
-    display: inline-block;
-    transition: transform 0.3s ease;
-  }
-
-  .service-cta:hover .arrow {
-    transform: translateX(6px);
-  }
-
-  /* ── HOW IT WORKS ── */
-  .how-it-works {
-    padding: 60px 0;
-    border-top: 1px solid #111;
-  }
-
-  .step {
-    margin-bottom: 32px;
-  }
-
-  .step:last-child {
-    margin-bottom: 0;
-  }
-
-  .step-number {
-    font-family: 'Cinzel', serif;
-    font-size: 14px;
-    color: #333;
-    letter-spacing: 2px;
-    margin-bottom: 8px;
-  }
-
-  .step-text {
-    font-size: 13px;
-    color: #686868;
-    line-height: 1.75;
-  }
-
-  .step-text strong {
-    color: #555;
-    font-weight: 500;
-  }
-
-  /* ── CONTACT CTA ── */
-  .contact {
-    padding: 60px 0 40px;
-    border-top: 1px solid #111;
-  }
-
-  .contact-text {
-    font-size: 14px;
-    color: #686868;
-    line-height: 1.75;
-  }
-
-  .contact-link {
-    color: #4a4a4a;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-
-  .contact-link:hover {
-    color: #888;
-  }
-
-  .contact-template {
-    margin-top: 24px;
-    padding: 20px;
-    border: 1px solid #151515;
-    background: #0a0a0a;
-    font-size: 12px;
-    color: #555;
-    line-height: 1.8;
-  }
-
-  .contact-template strong {
-    color: #686868;
-  }
-
-  /* ── FOOTER ── */
-  .footer {
-    padding: 22px 56px;
-    border-top: 1px solid #0f0f0f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 10;
-    margin-top: 80px;
-  }
-
-  .footer-copy,
-  .footer-location {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    color: #222;
-    text-transform: uppercase;
-  }
-
-  .footer-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-  }
-
-  /* ── SCROLL REVEAL ── */
-  .reveal {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: translateY(0);
-  }
-
-  /* ── MOBILE ── */
-  @media (max-width: 640px) {
-    .nav {
-      padding: 24px 28px;
-    }
-
-    .content {
-      padding: 0 28px;
-    }
-
-    .page-header {
-      padding: 80px 0 48px;
-    }
-
-    .footer {
-      padding: 20px 28px;
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .footer-meta {
-      align-items: flex-start;
-    }
-
-    #cursor-glow {
-      display: none;
-    }
-
-    .nav-links {
-      gap: 20px;
-    }
-  }
-
-  /* ── ACCESSIBILITY ── */
-  a:focus-visible {
-    outline: 1px solid #8a8a8a;
-    outline-offset: 4px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-    .reveal {
-      opacity: 1;
-      transform: none;
-    }
-  }
-</style>
-  <!-- Privacy-friendly analytics by Plausible -->
-  <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js"></script>
-  <script>
-    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-    plausible.init()
-  </script>
-</head>
-<body>
-
-  <!-- Cursor glow -->
-  <div id="cursor-glow" aria-hidden="true"></div>
-
-  <!-- Background image -->
-  <div class="bg-image" aria-hidden="true"></div>
-
-  <!-- Nav -->
-  <nav class="nav">
-    <a href="/">
-      <img class="nav-logo" src="/logo.webp" alt="Archaic" />
-    </a>
-    <div class="nav-links">
-      <a class="nav-link" href="/deeper">Deeper</a>
-      <a class="nav-link" href="/services" style="color:#686868;">Services</a>
-      <a class="nav-link" href="/principles">Principles</a>
-      <a class="nav-contact" href="mailto:hello@archaic.ie">hello@archaic.ie</a>
-    </div>
-  </nav>
-
+<Base
+  title="Services — Archaic"
+  description="Software services from a Dublin studio. Reviews, advisory, and builds. Scoped in writing, delivered by email. No calls, no day rates."
+  path="/services/"
+  current="services"
+>
   <div class="content">
 
     <!-- Page header -->
@@ -505,39 +78,200 @@
     </section>
 
   </div>
+</Base>
 
-  <!-- Footer -->
-  <footer class="footer">
-    <span class="footer-copy">&copy; {new Date().getFullYear()} Archaic Limited</span>
-    <div class="footer-meta">
-      <span class="footer-location">Registered in Ireland · Co. No. 811858</span>
-    </div>
-  </footer>
+<style>
+  /* ── CONTENT WRAPPER ── */
+  .content {
+    position: relative;
+    z-index: 10;
+    max-width: var(--measure);
+    margin: 0 auto;
+    padding: 0 var(--gutter);
+  }
 
-  <script>
-    // Cursor glow
-    const glow = document.getElementById('cursor-glow');
-    if (glow) {
-      document.addEventListener('mousemove', (e) => {
-        const x = e.clientX - 300;
-        const y = e.clientY - 300;
-        glow.style.transform = `translate(${x}px, ${y}px)`;
-      });
+  /* ── PAGE HEADER ── */
+  .page-header {
+    padding: var(--s-120) 0 var(--s-40);
+  }
+
+  .page-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-h1);
+    font-weight: 400;
+    color: var(--text-display);
+    letter-spacing: var(--ls-4);
+    text-transform: uppercase;
+  }
+
+  .page-intro {
+    font-size: var(--fs-14);
+    color: var(--text);
+    line-height: var(--lh-body);
+    max-width: 520px;
+    margin-top: var(--s-24);
+  }
+
+  /* ── SECTION ── */
+  .section {
+    padding: var(--s-60) 0;
+  }
+
+  .section-label {
+    font-size: var(--fs-9);
+    letter-spacing: var(--ls-3);
+    text-transform: uppercase;
+    color: var(--text-label);
+    margin-bottom: var(--s-48);
+    display: flex;
+    align-items: center;
+    gap: var(--s-14);
+  }
+
+  .section-label::before {
+    content: '';
+    display: block;
+    width: 28px;
+    height: 1px;
+    background: var(--rule-label);
+    flex-shrink: 0;
+  }
+
+  /* ── SERVICE BLOCK ── */
+  .service {
+    margin-bottom: var(--s-72);
+  }
+
+  .service:last-child {
+    margin-bottom: 0;
+  }
+
+  .service-name {
+    font-family: var(--font-display);
+    font-size: var(--fs-h2);
+    font-weight: 400;
+    color: var(--text-display);
+    letter-spacing: var(--ls-2);
+    text-transform: uppercase;
+    margin-bottom: var(--s-6);
+  }
+
+  .service-tagline {
+    font-size: var(--fs-13);
+    color: var(--text);
+    margin-bottom: var(--s-24);
+    font-style: italic;
+  }
+
+  .service-body {
+    font-size: var(--fs-13);
+    color: var(--text);
+    line-height: var(--lh-body);
+    margin-bottom: var(--s-24);
+  }
+
+  .service-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--s-10);
+    font-size: var(--fs-10);
+    letter-spacing: var(--ls-2);
+    text-transform: uppercase;
+    color: var(--text-cta);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .service-cta:hover {
+    color: var(--text-hover);
+  }
+
+  .service-cta .arrow {
+    display: inline-block;
+    transition: transform 0.3s ease;
+  }
+
+  .service-cta:hover .arrow {
+    transform: translateX(6px);
+  }
+
+  /* ── HOW IT WORKS ── */
+  .how-it-works {
+    padding: var(--s-60) 0;
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .step {
+    margin-bottom: var(--s-32);
+  }
+
+  .step:last-child {
+    margin-bottom: 0;
+  }
+
+  .step-number {
+    font-family: var(--font-display);
+    font-size: var(--fs-14);
+    color: var(--text-faint);
+    letter-spacing: var(--ls-2);
+    margin-bottom: var(--s-8);
+  }
+
+  .step-text {
+    font-size: var(--fs-13);
+    color: var(--text);
+    line-height: var(--lh-body);
+  }
+
+  .step-text strong {
+    color: var(--text-strong);
+    font-weight: 500;
+  }
+
+  /* ── CONTACT CTA ── */
+  .contact {
+    padding: var(--s-60) 0 var(--s-40);
+    border-top: 1px solid var(--rule-strong);
+  }
+
+  .contact-text {
+    font-size: var(--fs-14);
+    color: var(--text);
+    line-height: var(--lh-body);
+  }
+
+  .contact-link {
+    color: var(--text-cta);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .contact-link:hover {
+    color: var(--text-hover);
+  }
+
+  .contact-template {
+    margin-top: var(--s-24);
+    padding: var(--s-20);
+    border: 1px solid var(--panel-border);
+    background: var(--panel);
+    font-size: var(--fs-12);
+    color: var(--text-strong);
+    line-height: 1.8;
+  }
+
+  .contact-template strong {
+    color: var(--text);
+  }
+
+  /* ── MOBILE ── */
+  @media (max-width: 640px) {
+    .content {
+      padding: 0 var(--gutter-mobile);
     }
 
-    // Scroll reveal
-    const reveals = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('visible');
-          observer.unobserve(entry.target);
-        }
-      });
-    }, { threshold: 0.15 });
-
-    reveals.forEach((el) => observer.observe(el));
-  </script>
-
-</body>
-</html>
+    .page-header {
+      padding: var(--s-80) 0 var(--s-48);
+    }
+  }
+</style>

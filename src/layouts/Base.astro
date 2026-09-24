@@ -1,0 +1,101 @@
+---
+// src/layouts/Base.astro — the one document shell. See docs/superpowers/plans/2026-09-24-foundation-and-forge.md
+import { Font } from 'astro:assets';
+import '../styles/global.css';
+import Nav from '../components/Nav.astro';
+import Footer from '../components/Footer.astro';
+
+interface Props {
+  title: string;
+  description?: string;
+  path: string;
+  ogImage?: string;
+  noindex?: boolean;
+  layout?: 'scroll' | 'hero' | 'spin';
+  current?: 'deeper' | 'forge' | 'services' | 'principles';
+  ghostFont?: boolean;
+}
+const {
+  title, description, path, ogImage = '/og.png', noindex = false,
+  layout = 'scroll', current, ghostFont = false,
+} = Astro.props;
+const site = 'https://archaic.ie';
+const url = `${site}${path}`;
+---
+<!DOCTYPE html>
+<html lang="en" class={layout === 'hero' ? 'hero' : undefined}>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>{title}</title>
+  {description && <meta name="description" content={description} />}
+  {noindex && <meta name="robots" content="noindex" />}
+  {!noindex && <link rel="canonical" href={url} />}
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  {!noindex && (
+    <Fragment>
+      <meta property="og:type" content="website" />
+      <meta property="og:url" content={url} />
+      <meta property="og:title" content={title} />
+      <meta property="og:description" content={description} />
+      <meta property="og:image" content={`${site}${ogImage}`} />
+      <meta name="twitter:card" content="summary_large_image" />
+      <meta name="twitter:title" content={title} />
+      <meta name="twitter:description" content={description} />
+      <meta name="twitter:image" content={`${site}${ogImage}`} />
+    </Fragment>
+  )}
+
+  <slot name="head" />
+
+  <!-- Fonts: self-hosted from /_astro/fonts/. Cinzel is the display face and
+       Space Grotesk is above the fold on every page, so both are preloaded.
+       Uncial is the homepage ghost behind the fold line and is not. -->
+  <Font cssVariable="--font-cinzel" preload />
+  <Font cssVariable="--font-grotesk" preload />
+  {ghostFont && <Font cssVariable="--font-uncial" />}
+
+  <!-- Privacy-friendly analytics by Plausible -->
+  <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js" is:inline></script>
+  <script is:inline>
+    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+    plausible.init()
+  </script>
+</head>
+<body class={layout === 'spin' ? 'spin gated' : undefined}>
+  {layout !== 'spin' && <div id="cursor-glow" aria-hidden="true"></div>}
+  {layout === 'hero' && <div class="grain" aria-hidden="true"></div>}
+
+  <div class={`page page--${layout}`}>
+    {layout !== 'spin' && <div class="bg-image" aria-hidden="true"></div>}
+    <slot name="page-start" />
+    <Nav current={current} />
+    <slot />
+    {layout !== 'spin' && <Footer />}
+  </div>
+
+  <script>
+    // Cursor glow (desktop only; hidden by CSS on mobile)
+    const glow = document.getElementById('cursor-glow');
+    if (glow) {
+      document.addEventListener('mousemove', (e) => {
+        glow.style.transform = `translate(${e.clientX - 300}px, ${e.clientY - 300}px)`;
+      });
+    }
+    // Scroll reveal
+    const reveals = document.querySelectorAll('.reveal');
+    if (reveals.length) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) { entry.target.classList.add('visible'); observer.unobserve(entry.target); }
+        });
+      }, { threshold: 0.15 });
+      reveals.forEach((el) => observer.observe(el));
+    }
+  </script>
+</body>
+</html>
