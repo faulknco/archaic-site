@@ -87,8 +87,24 @@ top.agreement < 0.7 ? ok(`top agreement ${top.agreement.toFixed(3)} (noise)`) : 
 await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
 await page.waitForTimeout(6000);
 const bottom = await page.evaluate(() => window.__spin.sample());
+// Ink wash (2026-09-24): the cold phase must settle with ground in the majority
+// (the windowed external field picks the sign); bone islands may survive.
+// Settling is stochastic: after an instant jump the field needs a few seconds
+// of cold sweeps, so poll for up to 12 s rather than judging one sample.
+let settled = bottom.upFraction;
+for (let i = 0; i < 6 && settled >= 0.45; i++) {
+  await page.waitForTimeout(2000);
+  // The idle drift starts scrolling after 15 s without input; keep the page pinned
+  // at the bottom so the lattice stays cold for the whole poll.
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
+  settled = (await page.evaluate(() => window.__spin.sample())).upFraction;
+}
+settled < 0.45 ? ok(`bottom settles dark (upFraction ${settled.toFixed(3)})`) : fail(`bottom did not settle dark within 18 s: upFraction ${settled}`);
+const renderer = await page.evaluate(() => window.__spin.renderer);
+renderer === 'webgl' || renderer === 'canvas' ? ok(`renderer: ${renderer}`) : fail(`renderer: ${renderer}`);
 bottom.agreement > 0.9 ? ok(`bottom agreement ${bottom.agreement.toFixed(3)} (domains)`) : fail(`bottom agreement ${bottom.agreement}`);
 
+await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
 const T = await page.evaluate(() => window.__spin.temperature());
 Math.abs(T - 0.6) < 1e-6 ? ok('bottom temperature is the cold end') : fail(`bottom T ${T}`);
 

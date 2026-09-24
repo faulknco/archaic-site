@@ -91,7 +91,7 @@ import Base from '../../layouts/Base.astro';
      changes nothing. Without this the still stays rendered — and described to a
      screen reader — underneath a live lattice the canvas is aria-hidden from. */
   .poster[hidden] { display: none; }
-  canvas.lattice { image-rendering: pixelated; opacity: 0; transition: opacity 0.6s ease; z-index: 0; }
+  canvas.lattice { opacity: 0; transition: opacity 0.6s ease; z-index: 0; }
   canvas.lattice.live { opacity: 1; }
 
   /* Edge vignette, so the nav and the panel stay legible over bone. The top band
@@ -228,17 +228,14 @@ import Base from '../../layouts/Base.astro';
     }
     return parts;
   }
+  const COPPER_FALLBACK = [154, 106, 62];
   const UP = rgbToken('--bone-rgb', BONE_FALLBACK);
   const DOWN = rgbToken('--ground-rgb', GROUND_FALLBACK);
+  const COPPER = rgbToken('--copper-rgb', COPPER_FALLBACK);
   const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   const canvas = document.getElementById('lattice');
   const poster = document.getElementById('poster');
-  const ctx = canvas.getContext('2d', { alpha: false });
-  const back = document.createElement('canvas');
-  back.width = N; back.height = N;
-  const bctx = back.getContext('2d', { alpha: false });
-  const img = bctx.createImageData(N, N);
 
   let last = null;          // Int8Array of the last frame
   let frames = 0;
@@ -247,25 +244,138 @@ import Base from '../../layouts/Base.astro';
   let paused = false;       // the page has stopped asking for ticks
   let resets = 0;           // frames that came back flagged as a fresh draw
 
-  // ---- rendering -------------------------------------------------------
+  // ---- rendering: ink wash --------------------------------------------
+  // The worker's ±1 spins are blended over recent frames into a smooth field
+  // (EMA), so domains breathe rather than flicker. A WebGL2 shader draws the
+  // field: soft upscale, a contrast curve that keeps it inky rather than grey,
+  // ground→bone with a copper tint on the domain walls, and film grain. Without
+  // WebGL the Canvas 2D path draws the same field, plainer: no grain, no copper.
+  // The cold phase settles on ground rather than bone because the worker runs
+  // with a whisper of external field (H_FIELD) that favours the −1 spin.
+  // Blend weight of the newest frame: fast when hot so the noise stays a live
+  // stipple, slow when cold so the domains breathe.
+  const EMA_HOT = 0.6, EMA_COLD = 0.18;
+  // External field: zero at and above the critical point (2.269) so the
+  // critical clusters stay honest; on in a window just below it, where the
+  // domains are still mobile, so the ordered phase reliably picks ground; off
+  // again once cold, so the last bone islands freeze in instead of eroding.
+  const T_C = 2.269, H_MID = -0.015, H_COLD = -0.015;
+  const T_HOT_ = 5.0, T_COLD_ = 0.6;
+  // Zero at and above the critical point so the critical clusters are unbiased;
+  // ramps in over 2.27 → 2.0 and then holds. A weaker cold-end field was tried
+  // so that bone islands would survive, but a lattice quenched into the bone
+  // phase then sat there for tens of seconds. Reliably ending dark wins.
+  const hFor = (T) => {
+    if (T >= T_C) return 0;
+    if (T >= 2.0) return H_MID * (T_C - T) / (T_C - 2.0);
+    if (T >= 1.4) return H_MID;
+    return H_COLD + (H_MID - H_COLD) * Math.max(0, (T - T_COLD_) / (1.4 - T_COLD_));
+  };
+  const emaFor = (T) => EMA_COLD + (EMA_HOT - EMA_COLD) * Math.max(0, Math.min(1, (T - T_COLD_) / (T_HOT_ - T_COLD_)));
+  const field = new Float32Array(N * N);
+  const tex8 = new Uint8Array(N * N);
+  const unit = (rgb) => rgb.map((v) => v / 255);
+  let renderer = 'none';
+
+  const gl = canvas.getContext('webgl2', { alpha: false, antialias: false, preserveDrawingBuffer: true });
+  let glState = null;
+  if (gl) {
+    const vs = `#version 300 es
+      in vec2 p; out vec2 v; void main(){ v = p * 0.5 + 0.5; gl_Position = vec4(p, 0.0, 1.0); }`;
+    const fs = `#version 300 es
+      precision highp float;
+      uniform sampler2D u_field; uniform vec2 u_res; uniform float u_time; uniform float u_tex;
+      uniform vec3 u_ground, u_bone, u_copper;
+      in vec2 v; out vec4 o;
+      float hash(vec2 q){ return fract(sin(dot(q, vec2(12.9898, 78.233))) * 43758.5453); }
+      void main(){
+        float side = max(u_res.x, u_res.y);
+        vec2 px = (v * u_res - (u_res - vec2(side)) * 0.5) / side;
+        vec2 texel = vec2(1.0 / u_tex);
+        float t = texture(u_field, px).r * 0.5
+                + texture(u_field, px + vec2(texel.x, 0.0)).r * 0.125
+                + texture(u_field, px - vec2(texel.x, 0.0)).r * 0.125
+                + texture(u_field, px + vec2(0.0, texel.y)).r * 0.125
+                + texture(u_field, px - vec2(0.0, texel.y)).r * 0.125;
+        t = 0.5 + 0.5 * tanh(4.0 * (t - 0.5));
+        vec3 col = mix(u_ground, u_bone, t);
+        float wall = pow(4.0 * t * (1.0 - t), 1.5);
+        col += (u_copper - (u_ground + u_bone) * 0.5) * wall * 0.35;
+        col += (hash(gl_FragCoord.xy + fract(u_time) * 100.0) - 0.5) * 0.04;
+        o = vec4(col, 1.0);
+      }`;
+    const compile = (type, src) => {
+      const sh = gl.createShader(type); gl.shaderSource(sh, src); gl.compileShader(sh);
+      if (!gl.getShaderParameter(sh, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(sh));
+      return sh;
+    };
+    try {
+      const prog = gl.createProgram();
+      gl.attachShader(prog, compile(gl.VERTEX_SHADER, vs));
+      gl.attachShader(prog, compile(gl.FRAGMENT_SHADER, fs));
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(prog));
+      gl.useProgram(prog);
+      const buf = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, buf);
+      gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
+      const loc = gl.getAttribLocation(prog, 'p'); gl.enableVertexAttribArray(loc); gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
+      const tex = gl.createTexture(); gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.R8, N, N, 0, gl.RED, gl.UNSIGNED_BYTE, tex8);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.REPEAT);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.REPEAT);
+      const u = (name) => gl.getUniformLocation(prog, name);
+      gl.uniform1i(u('u_field'), 0);
+      gl.uniform1f(u('u_tex'), N);
+      gl.uniform3fv(u('u_ground'), unit(DOWN)); gl.uniform3fv(u('u_bone'), unit(UP)); gl.uniform3fv(u('u_copper'), unit(COPPER));
+      glState = { tex, uRes: u('u_res'), uTime: u('u_time') };
+      renderer = 'webgl';
+    } catch (e) { console.warn('spin: WebGL unavailable, drawing with canvas instead', e); glState = null; }
+  }
+
+  let ctx = null, back = null, bctx = null, img = null;
+  if (!glState) {
+    ctx = canvas.getContext('2d', { alpha: false });
+    back = document.createElement('canvas'); back.width = N; back.height = N;
+    bctx = back.getContext('2d', { alpha: false }); img = bctx.createImageData(N, N);
+    renderer = 'canvas';
+  }
+
   function resize() {
     const dpr = Math.min(devicePixelRatio || 1, 2);
     canvas.width = Math.round(innerWidth * dpr);
     canvas.height = Math.round(innerHeight * dpr);
-    ctx.imageSmoothingEnabled = false;
+    if (glState) { gl.viewport(0, 0, canvas.width, canvas.height); gl.uniform2f(glState.uRes, canvas.width, canvas.height); }
     if (last) paint();
   }
+  function blend(spins, hard) {
+    const EMA = emaFor(temperature());
+    const k = 1 - EMA;
+    for (let i = 0; i < field.length; i++) {
+      const f = hard ? spins[i] : field[i] * k + spins[i] * EMA;
+      field[i] = f;
+      tex8[i] = ((f + 1) * 127.5) | 0;
+    }
+  }
   function paint() {
+    if (glState) {
+      gl.bindTexture(gl.TEXTURE_2D, glState.tex);
+      gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, N, N, gl.RED, gl.UNSIGNED_BYTE, tex8);
+      gl.uniform1f(glState.uTime, performance.now() / 1000);
+      gl.drawArrays(gl.TRIANGLE_STRIP, 0, 4);
+      return;
+    }
     const d = img.data;
-    for (let i = 0, j = 0; i < last.length; i++, j += 4) {
-      const c = last[i] > 0 ? UP : DOWN;
-      d[j] = c[0]; d[j + 1] = c[1]; d[j + 2] = c[2]; d[j + 3] = 255;
+    for (let i = 0, j = 0; i < field.length; i++, j += 4) {
+      let t = (field[i] + 1) / 2; t = 0.5 + 0.5 * Math.tanh(4.0 * (t - 0.5));
+      d[j] = DOWN[0] + (UP[0] - DOWN[0]) * t; d[j + 1] = DOWN[1] + (UP[1] - DOWN[1]) * t; d[j + 2] = DOWN[2] + (UP[2] - DOWN[2]) * t; d[j + 3] = 255;
     }
     bctx.putImageData(img, 0, 0);
     const side = Math.max(canvas.width, canvas.height);
-    const x = (canvas.width - side) / 2, y = (canvas.height - side) / 2;
-    ctx.imageSmoothingEnabled = false;
-    ctx.drawImage(back, x, y, side, side);
+    ctx.imageSmoothingEnabled = true;
+    ctx.drawImage(back, (canvas.width - side) / 2, (canvas.height - side) / 2, side, side);
   }
   addEventListener('resize', resize);
   resize();
@@ -305,7 +415,7 @@ import Base from '../../layouts/Base.astro';
     worker = new Worker('/forge/spin/worker.js', { type: 'module' });
     worker.onmessage = onWorkerMessage;
     worker.onerror = (e) => console.error('spin worker failed:', e.message);
-    worker.postMessage({ type: 'init', n: N, seed: Date.now() % 4294967296, maxSweeps: reduced ? 1 : 4 });
+    worker.postMessage({ type: 'init', n: N, seed: Date.now() % 4294967296, maxSweeps: reduced ? 1 : 4, h: hFor(temperature()) });
     // Someone who asked for less motion gets the still poster and a Run button.
     // Nothing moves until they ask for it: paused is already true when 'ready'
     // arrives, so loop() returns without posting a tick and no frame is painted.
@@ -322,6 +432,7 @@ import Base from '../../layouts/Base.astro';
       // would let the next frame post a second tick on top of the one already in
       // flight, and the two would stay in flight for the life of the page.
       if (m.reset) resets++; else pending = false;
+      blend(last, frames === 1 || m.reset);
       paint();
       if (frames === 1) { canvas.classList.add('live'); poster.hidden = true; }
       return;
@@ -341,7 +452,7 @@ import Base from '../../layouts/Base.astro';
   function loop() {
     looping = false;
     if (!visible || !worker || paused) return;
-    if (!pending) { pending = true; worker.postMessage({ type: 'tick', T: temperature() }); }
+    if (!pending) { pending = true; const T = temperature(); worker.postMessage({ type: 'tick', T, h: hFor(T) }); }
     schedule();
   }
   // Pause stops the request side only. A tick already in flight still comes back
@@ -384,13 +495,9 @@ import Base from '../../layouts/Base.astro';
 
   document.getElementById('save').addEventListener('click', () => {
     if (!last) return;
-    const out = document.createElement('canvas');
-    out.width = canvas.width; out.height = canvas.height;
-    const octx = out.getContext('2d', { alpha: false });
-    octx.imageSmoothingEnabled = false;
-    const side = Math.max(out.width, out.height);
-    octx.drawImage(back, (out.width - side) / 2, (out.height - side) / 2, side, side);
-    out.toBlob((blob) => {
+    paint();
+    canvas.toBlob((blob) => {
+      if (!blob) return;
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
       a.download = 'archaic-spin.png';
@@ -403,6 +510,7 @@ import Base from '../../layouts/Base.astro';
   window.__spin = {
     get frames() { return frames; },
     get resets() { return resets; },
+    get renderer() { return renderer; },
     get paused() { return paused; },
     temperature, pause, resume, reset,
     sample() {

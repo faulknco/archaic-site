@@ -8,6 +8,7 @@ let sim = null;
 let n = 0;
 let memory = null;
 let maxSweeps = 4;
+let h = 0;
 
 function spinsView() {
   // Zero-copy view into WASM memory; must be re-created if memory grows.
@@ -22,13 +23,18 @@ self.onmessage = async (e) => {
       memory = out.memory;
       n = msg.n;
       maxSweeps = msg.maxSweeps ?? 4;
-      sim = new IsingWasm(n, 0, 1.0, 0.0, BigInt(msg.seed >>> 0));
+      // msg.h: a whisper of external field so the cold phase is reproducible (negative favours -1).
+      h = msg.h ?? 0.0;
+      sim = new IsingWasm(n, 0, 1.0, h, BigInt(msg.seed >>> 0));
       sim.randomise();
       self.postMessage({ type: 'ready', n });
       return;
     }
     if (msg.type === 'tick') {
       if (!sim) return;
+      // The page ramps the external field with temperature; only touch the
+      // engine when it actually changes.
+      if (typeof msg.h === 'number' && msg.h !== h) { h = msg.h; sim.set_params(1.0, h); }
       const start = performance.now();
       let sweeps = 0;
       do {
