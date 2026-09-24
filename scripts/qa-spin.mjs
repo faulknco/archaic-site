@@ -1,4 +1,4 @@
-// Verifies /lab/spin behaves like an Ising model and loads cleanly.
+// Verifies /forge/spin behaves like an Ising model and loads cleanly.
 // Usage: node scripts/qa-spin.mjs [baseUrl]   (default http://localhost:4321)
 // Serve first, e.g. `npm run preview` (port 4321). Needs `npx playwright install chromium` once.
 import { chromium } from 'playwright';
@@ -12,9 +12,13 @@ const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
 const consoleErrors = [];
 page.on('console', (m) => { if (m.type() === 'error') consoleErrors.push(m.text()); });
 page.on('pageerror', (e) => consoleErrors.push(`pageerror: ${e.message}`));
-const wasm = page.waitForResponse((r) => r.url().endsWith('/lab/spin/ising_bg.wasm'));
+const wasm = page.waitForResponse((r) => r.url().endsWith('/forge/spin/ising_bg.wasm'));
 
-await page.goto(`${base}/lab/spin/`, { waitUntil: 'domcontentloaded' });
+await page.goto(`${base}/forge/spin/`, { waitUntil: 'domcontentloaded' });
+await page.waitForTimeout(1500);
+const before = await page.evaluate(() => window.__spin ? window.__spin.frames : -1);
+before === 0 ? ok('nothing runs before the gate') : fail(`frames before gate: ${before}`);
+await page.click('#begin');
 const wasmStatus = (await wasm).status();
 wasmStatus === 200 ? ok('wasm served 200') : fail(`wasm status ${wasmStatus}`);
 

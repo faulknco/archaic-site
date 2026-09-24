@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { temperatureFor, CONTROL_POINTS } from '../public/lab/spin/tmap.js';
+import { temperatureFor, CONTROL_POINTS } from '../public/forge/spin/tmap.js';
 
 const close = (a, b, eps = 1e-9) => Math.abs(a - b) < eps;
 

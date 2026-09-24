@@ -4,21 +4,21 @@ Date: 2026-09-24. Status: approved by Connor 2026-09-24 (design discussed in cha
 
 ## What it is
 
-A full-screen, two-tone, live 2D Ising model at `archaic.ie/lab/spin`. Page scroll is temperature: the top of the page is hot noise, the middle is the critical point, the bottom is frozen domains. One line of text, one save button, nothing else. It reuses the existing `ising-rs` WebAssembly build unchanged.
+A full-screen, two-tone, live 2D Ising model at `archaic.ie/forge/spin`. Page scroll is temperature: the top of the page is hot noise, the middle is the critical point, the bottom is frozen domains. One line of text, one save button, nothing else. It reuses the existing `ising-rs` WebAssembly build unchanged.
 
-Purpose for Archaic: the single strongest "we do physics and Rust" credential on the site, in the brand's own visual language, at near-zero upkeep. First piece under `/lab`.
+Purpose for Archaic: the single strongest "we do physics and Rust" credential on the site, in the brand's own visual language, at near-zero upkeep. First piece under `/forge`.
 
-Out of scope: any change to `ising-rs` itself (Connor may ask for that separately if the piece is not striking enough), a `/lab` index page, 3D, colour palettes, sound, analytics events, sharing cards beyond a static OG image.
+Out of scope: any change to `ising-rs` itself (Connor may ask for that separately if the piece is not striking enough), a `/forge` index page, 3D, colour palettes, sound, analytics events, sharing cards beyond a static OG image.
 
 ## Files
 
 In `archaic-site`:
 
-- `src/pages/lab/spin.astro` — self-contained page (inline style + inline module script), same conventions as the other pages: no shared layout, Cinzel uppercase where Cinzel is used, Plausible snippet, canonical, OG/Twitter meta.
-- `public/lab/spin/ising.js`, `public/lab/spin/ising_bg.wasm` — copied verbatim from `ising-rs/docs/pkg/` (wasm-bindgen output, 81 KB wasm).
-- `public/lab/spin/worker.js` — the simulation worker (new, ~60 lines).
-- `public/lab/spin/VERSION` — the `ising-rs` commit the pkg was copied from, plus the copy date.
-- `public/lab/spin/og.png` — 1200×630 frame captured from the piece near the critical point.
+- `src/pages/forge/spin.astro` — self-contained page (inline style + inline module script), same conventions as the other pages: no shared layout, Cinzel uppercase where Cinzel is used, Plausible snippet, canonical, OG/Twitter meta.
+- `public/forge/spin/ising.js`, `public/forge/spin/ising_bg.wasm` — copied verbatim from `ising-rs/docs/pkg/` (wasm-bindgen output, 81 KB wasm).
+- `public/forge/spin/worker.js` — the simulation worker (new, ~60 lines).
+- `public/forge/spin/VERSION` — the `ising-rs` commit the pkg was copied from, plus the copy date.
+- `public/forge/spin/og.png` — 1200×630 frame captured from the piece near the critical point.
 - `scripts/vendor-ising.sh` — copies `../ising-rs/docs/pkg/{ising.js,ising_bg.wasm}` and writes VERSION.
 - `scripts/qa-spin.mjs` — Playwright check (see Verification).
 - `public/_headers` — CSP additions (see Security).
@@ -57,7 +57,7 @@ In `archaic-site`:
 
 ## Head / SEO
 
-- `<title>Spin — Archaic</title>`, description "A two-dimensional Ising model running live in your browser. Scroll to cool it from noise, through the critical point, into frozen domains.", canonical `https://archaic.ie/lab/spin/`, OG/Twitter tags with `/lab/spin/og.png`. Indexable; sitemap picks it up. `lang="en"`.
+- `<title>Spin — Archaic</title>`, description "A two-dimensional Ising model running live in your browser. Scroll to cool it from noise, through the critical point, into frozen domains.", canonical `https://archaic.ie/forge/spin/`, OG/Twitter tags with `/forge/spin/og.png`. Indexable; sitemap picks it up. `lang="en"`.
 
 ## Security
 
@@ -69,10 +69,15 @@ In `archaic-site`:
 
 ## Verification
 
-- `scripts/qa-spin.mjs` (Playwright, run locally against `npm run preview` or the live URL): load `/lab/spin/`, wait for the first frame; at scroll top sample the 256×256 backing canvas via an exposed `window.__spin.sample()` returning `{upFraction, agreement}` where `agreement` is the mean fraction of nearest neighbours equal to each spin. Assert top: `upFraction` in [0.4, 0.6] and `agreement` < 0.7. Scroll to bottom, wait 6 s, assert `agreement` > 0.9. Also assert no console errors and that `/lab/spin/ising_bg.wasm` returned 200.
+- `scripts/qa-spin.mjs` (Playwright, run locally against `npm run preview` or the live URL): load `/forge/spin/`, wait for the first frame; at scroll top sample the 256×256 backing canvas via an exposed `window.__spin.sample()` returning `{upFraction, agreement}` where `agreement` is the mean fraction of nearest neighbours equal to each spin. Assert top: `upFraction` in [0.4, 0.6] and `agreement` < 0.7. Scroll to bottom, wait 6 s, assert `agreement` > 0.9. Also assert no console errors and that `/forge/spin/ising_bg.wasm` returned 200.
 - CI (build + lychee) must stay green. Manual: check on a phone (touch scroll, no jank), and with reduced motion on.
 - Screenshots at 1280×900 and 400×800 reviewed before merge.
 
 ## Delivery
 
-Branch `lab/spin`, one PR into `main`. Merge deploys. Vault repo overview and memory updated after merge.
+Branch `forge/spin`, one PR into `main`. Merge deploys. Vault repo overview and memory updated after merge.
+
+## Changes after Connor's review of the preview (2026-09-24)
+
+- Section renamed from `/lab` to `/forge` (Connor's choice from forge / magic / runes / rites). All paths above read `/forge/spin`.
+- Photosensitivity gate: the page opens on a full-screen notice ("THIS PAGE FLASHES", Cinzel uppercase, with a plain-language sentence and Continue / Back). The worker is not created and nothing moves until Continue is pressed. The choice is remembered for the browser session only (`sessionStorage`, wrapped in try/catch), so a return visit in a new tab shows the notice again. The QA script asserts that no frames flow before the gate and clicks through it.

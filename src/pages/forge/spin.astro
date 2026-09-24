@@ -9,21 +9,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Spin — Archaic</title>
   <meta name="description" content="A two-dimensional Ising model running live in your browser. Scroll to cool it from noise, through the critical point, into frozen domains." />
-  <link rel="canonical" href="https://archaic.ie/lab/spin/" />
+  <link rel="canonical" href="https://archaic.ie/forge/spin/" />
 
   <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
 
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://archaic.ie/lab/spin/" />
+  <meta property="og:url" content="https://archaic.ie/forge/spin/" />
   <meta property="og:title" content="Spin — Archaic" />
   <meta property="og:description" content="A two-dimensional Ising model running live in your browser. Scroll to cool it." />
-  <meta property="og:image" content="https://archaic.ie/lab/spin/og.png" />
+  <meta property="og:image" content="https://archaic.ie/forge/spin/og.png" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Spin — Archaic" />
   <meta name="twitter:description" content="A two-dimensional Ising model running live in your browser. Scroll to cool it." />
-  <meta name="twitter:image" content="https://archaic.ie/lab/spin/og.png" />
+  <meta name="twitter:image" content="https://archaic.ie/forge/spin/og.png" />
 
   <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js"></script>
   <script is:inline>
@@ -33,7 +33,7 @@
 
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
   <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { background: #060606; }
@@ -88,6 +88,30 @@
   }
   .save:hover { color: #888; }
 
+  /* Photosensitivity gate: shown before anything moves. */
+  .gate {
+    position: fixed; inset: 0; z-index: 3;
+    background: #060606;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .gate.closed { display: none; }
+  .gate-inner { max-width: 44ch; }
+  .gate-title {
+    font-family: 'Cinzel', serif; text-transform: uppercase;
+    font-size: clamp(18px, 2.5vw, 24px); letter-spacing: 2px; color: #e8e4d8;
+    margin-bottom: 20px;
+  }
+  .gate-text { font-size: 13px; line-height: 1.75; color: #686868; margin-bottom: 32px; }
+  .gate-actions { display: flex; gap: 32px; align-items: center; }
+  .gate-continue, .gate-back {
+    font: inherit; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    background: none; border: 0; cursor: pointer; text-decoration: none;
+    color: #8a8a8a; transition: color 0.3s;
+  }
+  .gate-continue:hover, .gate-back:hover { color: #e8e4d8; }
+  body.gated { overflow: hidden; }
+
   a:focus-visible, button:focus-visible { outline: 1px solid #8a8a8a; outline-offset: 4px; }
 
   @media (max-width: 640px) {
@@ -100,7 +124,18 @@
   }
   </style>
 </head>
-<body>
+<body class="gated">
+  <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="gate-inner">
+      <p class="gate-title" id="gate-title">THIS PAGE FLASHES</p>
+      <p class="gate-text">It is a live physical simulation. At its hottest it becomes a rapidly flickering pattern across the whole screen. If flashing light affects you, go back.</p>
+      <div class="gate-actions">
+        <button class="gate-continue" id="begin" type="button">Continue</button>
+        <a class="gate-back" href="/">Back</a>
+      </div>
+    </div>
+  </div>
+
   <canvas class="lattice" id="lattice" aria-label="A live two-dimensional Ising model" role="img"></canvas>
   <div class="vignette" aria-hidden="true"></div>
   <div class="track" aria-hidden="true"></div>
@@ -115,7 +150,7 @@
   <button class="save" id="save" type="button">Save</button>
 
   <script type="module" is:inline>
-    import { temperatureFor } from '/lab/spin/tmap.js';
+    import { temperatureFor } from '/forge/spin/tmap.js';
 
     const N = 256;
     const UP = [0xe8, 0xe4, 0xd8];
@@ -164,9 +199,19 @@
     }
     const temperature = () => temperatureFor(scrollFraction());
 
-    // ---- worker -----------------------------------------------------------
-    const worker = new Worker('/lab/spin/worker.js', { type: 'module' });
-    worker.onmessage = (e) => {
+    // ---- worker (started only after the gate) -----------------------------
+    let worker = null;
+    function start() {
+      if (worker) return;
+      document.body.classList.remove('gated');
+      document.getElementById('gate').classList.add('closed');
+      worker = new Worker('/forge/spin/worker.js', { type: 'module' });
+      worker.onmessage = onWorkerMessage;
+      worker.onerror = (e) => console.error('spin worker failed:', e.message);
+      worker.postMessage({ type: 'init', n: N, seed: Date.now() % 4294967296, maxSweeps: reduced ? 1 : 4 });
+      armIdle();
+    }
+    function onWorkerMessage(e) {
       const m = e.data;
       if (m.type === 'ready') { pending = false; loop(); return; }
       if (m.type === 'frame') {
@@ -178,12 +223,10 @@
         return;
       }
       if (m.type === 'error') console.error('spin worker:', m.message);
-    };
-    worker.onerror = (e) => console.error('spin worker failed:', e.message);
-    worker.postMessage({ type: 'init', n: N, seed: Date.now() % 4294967296, maxSweeps: reduced ? 1 : 4 });
+    }
 
     function loop() {
-      if (!visible) return;
+      if (!visible || !worker) return;
       if (!pending) { pending = true; worker.postMessage({ type: 'tick', T: temperature() }); }
       requestAnimationFrame(loop);
     }
@@ -206,12 +249,11 @@
     function armIdle() {
       drifting = false;
       clearTimeout(idleTimer);
-      if (reduced) return;
+      if (reduced || !worker) return;
       idleTimer = setTimeout(() => { drifting = true; drift(); }, IDLE_MS);
     }
     for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) addEventListener(ev, armIdle, { passive: true });
     addEventListener('scroll', () => { if (!selfScroll) armIdle(); }, { passive: true });
-    armIdle();
 
     // ---- save -------------------------------------------------------------
     document.getElementById('save').addEventListener('click', () => {
@@ -247,6 +289,15 @@
         return { upFraction: up / (N * N), agreement: agree / (2 * N * N) };
       },
     };
+
+    // ---- gate ---------------------------------------------------------------
+    document.getElementById('begin').addEventListener('click', () => {
+      try { sessionStorage.setItem('spin-gate', 'ok'); } catch {}
+      start();
+    });
+    let seen = false;
+    try { seen = sessionStorage.getItem('spin-gate') === 'ok'; } catch {}
+    if (seen) start();
   </script>
 </body>
 </html>
