@@ -1,14 +1,3 @@
-import { defineCollection, z } from 'astro:content';
-import { glob } from 'astro/loaders';
-
-const journal = defineCollection({
-  loader: glob({ pattern: '**/*.md', base: './src/content/journal' }),
-  schema: z.object({
-    title: z.string(),
-    date: z.coerce.date(),
-    slug: z.string(),
-    description: z.string(),
-  }),
-});
-
-export const collections = { journal };
+// No content collections at present. The journal moved to connorfaulkner.com on
+// 2026-09-24; /deeper links out to it.
+export const collections = {};
