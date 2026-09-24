@@ -259,13 +259,12 @@ import Base from '../../layouts/Base.astro';
   // critical clusters stay honest; on in a window just below it, where the
   // domains are still mobile, so the ordered phase reliably picks ground; off
   // again once cold, so the last bone islands freeze in instead of eroding.
-  const T_C = 2.269, H_MID = -0.015, H_COLD = -0.005;
+  const T_C = 2.269, H_MID = -0.015, H_COLD = -0.015;
   const T_HOT_ = 5.0, T_COLD_ = 0.6;
-  // Zero at and above the critical point so the critical clusters are unbiased.
-  // Ramps in over 2.27 → 2.0, full strength while the domains are still mobile
-  // (2.0 → 1.4), then tapers towards the cold end: strong enough that a lattice
-  // quenched straight to the bottom still drifts to a ground majority within a
-  // few seconds, weak enough when cold that the last bone islands survive.
+  // Zero at and above the critical point so the critical clusters are unbiased;
+  // ramps in over 2.27 → 2.0 and then holds. A weaker cold-end field was tried
+  // so that bone islands would survive, but a lattice quenched into the bone
+  // phase then sat there for tens of seconds. Reliably ending dark wins.
   const hFor = (T) => {
     if (T >= T_C) return 0;
     if (T >= 2.0) return H_MID * (T_C - T) / (T_C - 2.0);
