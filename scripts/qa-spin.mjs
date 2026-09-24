@@ -19,7 +19,61 @@ await page.goto(`${base}/forge/spin/`, { waitUntil: 'domcontentloaded' });
 await page.waitForTimeout(1500);
 const before = await page.evaluate(() => window.__spin ? window.__spin.frames : -1);
 before === 0 ? ok('nothing runs before the gate') : fail(`frames before gate: ${before}`);
+
+// Everything behind the gate is inert, so the first Tab from a fresh document
+// lands in the gate instead of walking ten controls hidden under the overlay.
+// Blur first: the page focuses Continue on load, and tabbing from there would
+// pass whether or not the rest of the page is reachable.
+const describe = () => page.evaluate(() => {
+  const a = document.activeElement;
+  if (!a || a === document.body) return 'body';
+  return `${a.id || a.className || a.tagName}${document.getElementById('gate').contains(a) ? ' (in gate)' : ' (OUTSIDE gate)'}`;
+});
+await page.evaluate(() => document.activeElement?.blur());
+await page.keyboard.press('Tab');
+const firstStop = await describe();
+firstStop === 'begin (in gate)' || firstStop.endsWith('(in gate)')
+  ? ok(`first Tab before the gate lands on ${firstStop}`)
+  : fail(`first Tab before the gate landed on ${firstStop}`);
+const inertCount = await page.evaluate(() => document.querySelectorAll('[inert]').length);
+inertCount >= 2 ? ok(`${inertCount} regions inert behind the gate`) : fail(`only ${inertCount} inert regions behind the gate`);
+
+// The whole invariant, not just the first stop: every focusable control outside
+// the gate must sit inside an inert subtree. A reader who Tabs in from the
+// address bar restarts at the top of the document, and the nav is up there.
+const reachable = await page.evaluate(() => {
+  const gate = document.getElementById('gate');
+  return [...document.querySelectorAll('a[href], button, input, select, textarea, [tabindex]')]
+    .filter((el) => !gate.contains(el) && !el.closest('[inert]'))
+    .map((el) => el.className || el.id || el.tagName);
+});
+reachable.length === 0
+  ? ok('no focusable control outside the gate is reachable')
+  : fail(`reachable behind the gate: ${reachable.join(', ')}`);
+
+// The nav renders before the gate, so a forward Tab from the gate would pass it
+// either way. What inert actually governs is whether the nav can take focus at
+// all, so ask it directly.
+const navFocusable = () => page.evaluate(() => {
+  const mark = document.querySelector('.nav-mark');
+  mark.focus();
+  return document.activeElement === mark;
+});
+(await navFocusable()) ? fail('nav took focus while the gate was open') : ok('nav refuses focus behind the gate');
+
 await page.click('#begin');
+const stillInert = await page.evaluate(() => document.querySelectorAll('[inert]').length);
+stillInert === 0 ? ok('inert lifted once the gate was dismissed') : fail(`${stillInert} regions still inert after Continue`);
+(await navFocusable()) ? ok('nav takes focus once the gate is dismissed') : fail('nav still refuses focus after Continue');
+// And it is in the tab order, not merely focusable: Tab from the mark walks on
+// to the first nav link.
+await page.keyboard.press('Tab');
+const afterStop = await page.evaluate(() => {
+  const a = document.activeElement;
+  return a ? `${a.className || a.id || a.tagName}` : 'none';
+});
+/nav/.test(afterStop) ? ok(`Tab moves through the nav after Continue (${afterStop})`) : fail(`after Continue, Tab from the nav mark landed on ${afterStop}`);
+
 const wasmStatus = (await wasm).status();
 wasmStatus === 200 ? ok('wasm served 200') : fail(`wasm status ${wasmStatus}`);
 
@@ -79,6 +133,20 @@ posterState.hidden && posterState.display === 'none'
   ? ok('poster stood down once the lattice was live (display: none)')
   : fail(`poster still rendered over a live lattice: hidden=${posterState.hidden} display=${posterState.display}`);
 /\d/.test(await page.textContent('#panel')) ? fail('digits in the panel') : ok('no digits in the panel');
+
+// Save builds a canvas, calls toBlob and drives an object-URL download. None of
+// that was exercised until now, so a broken export would have shipped green.
+try {
+  const [download] = await Promise.all([
+    page.waitForEvent('download', { timeout: 15000 }),
+    page.click('#save'),
+  ]);
+  const name = download.suggestedFilename();
+  name === 'archaic-spin.png' ? ok(`Save downloaded ${name}`) : fail(`Save downloaded ${name}, expected archaic-spin.png`);
+  await download.delete();
+} catch (e) {
+  fail(`Save produced no download: ${e.message}`);
+}
 
 consoleErrors.length === 0 ? ok('no console errors') : fail(`console errors: ${consoleErrors.join(' | ')}`);
 

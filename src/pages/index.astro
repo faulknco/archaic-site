@@ -109,6 +109,10 @@ import Base from '../layouts/Base.astro';
     color: var(--text-display);
     line-height: 1.2;
     letter-spacing: var(--ls-2);
+    /* Uppercase in the HTML and in CSS both, like every other Cinzel element on
+       the site. The glyphs are already uppercase, so this moves no pixels; it
+       stops the constraint resting on the source text alone. */
+    text-transform: uppercase;
     margin-bottom: var(--s-28);
     max-width: 580px;
     opacity: 0.25;

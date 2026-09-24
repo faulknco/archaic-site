@@ -161,6 +161,11 @@ a:focus-visible, button:focus-visible { outline: 1px solid var(--focus); outline
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    /* Delays too, not just durations. Zeroing the duration alone still leaves
+       the homepage hero waiting out delays to 0.95s before its entrance lands,
+       which a screenshot can capture mid-fade. */
+    animation-delay: 0.01ms !important;
+    transition-delay: 0.01ms !important;
   }
   .reveal { opacity: 1; transform: none; }
 }

@@ -23,15 +23,32 @@ import Base from '../../layouts/Base.astro';
     </div>
   </div>
 
+  <!-- The gate is a modal over a page whose other controls stay in the document.
+       `inert` is what actually takes them out: the nav renders before the gate
+       (Base puts it ahead of the slot), so without this the first Tab from a
+       fresh document walks the mark, four nav links, the email and the four
+       panel controls, all of them invisible under an opaque overlay, before it
+       reaches Continue. The gate's own Tab-wrap only fires once focus is
+       already inside it, so it cannot fix this on its own.
+
+       The panel and the canvas carry `inert` from the server, so it holds
+       before any script runs and holds forever if none does. The nav is Base's,
+       so a synchronous inline script marks it at parse time — the nav is
+       already in the document by then. start() lifts all three together, which
+       covers Continue and the returning-visitor path in one place. -->
+  <script is:inline>
+    document.querySelector('.page--spin .nav')?.setAttribute('inert', '');
+  </script>
+
   <!-- What a crawler, a reader who asked for less motion, and anyone whose wasm
        never arrives actually sees. Hidden the moment a real frame is painted. -->
   <img class="poster" id="poster" src="/forge/spin/poster.webp" width="1600" height="1000" decoding="async"
        alt="A square lattice of the two-dimensional Ising model near its critical temperature: bone and black domains at every size, from single cells to patches that span the frame." />
-  <canvas class="lattice" id="lattice" aria-hidden="true"></canvas>
+  <canvas class="lattice" id="lattice" aria-hidden="true" inert></canvas>
   <div class="vignette" aria-hidden="true"></div>
   <div class="track" aria-hidden="true"></div>
 
-  <main class="panel" id="panel">
+  <main class="panel" id="panel" inert>
     <h1 class="panel-title">SPIN</h1>
     <p class="panel-text">A two-dimensional Ising model, running live in your browser. Every cell is a spin that wants to match its neighbours. Heat fights that. At the top of the page it is hot, and the lattice is noise. At the bottom it is cold, and the lattice freezes into domains. In between, at one temperature, structure appears at every size at once. That point is why physicists still study this model. Scroll to cool it.</p>
     <p class="readout" role="status" aria-live="polite">
@@ -280,6 +297,11 @@ import Base from '../../layouts/Base.astro';
     if (worker) return;
     document.body.classList.remove('gated');
     document.getElementById('gate').classList.add('closed');
+    // The gate is down, so the page is reachable again: nav, panel controls and
+    // the canvas all come out of `inert` together. Both routes past the gate —
+    // the Continue click and the returning visitor's auto-start — run through
+    // here, so this is the only place that has to undo it.
+    for (const el of document.querySelectorAll('[inert]')) el.removeAttribute('inert');
     worker = new Worker('/forge/spin/worker.js', { type: 'module' });
     worker.onmessage = onWorkerMessage;
     worker.onerror = (e) => console.error('spin worker failed:', e.message);
