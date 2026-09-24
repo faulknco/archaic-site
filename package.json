@@ -11,7 +11,9 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "node --test tests/",
-    "qa:spin": "node scripts/qa-spin.mjs"
+    "qa:spin": "node scripts/qa-spin.mjs",
+    "qa:parity": "node scripts/parity.mjs",
+    "qa:console": "node scripts/console-check.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -20,6 +22,8 @@
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
-    "playwright": "^1.63.0"
+    "pixelmatch": "^7.2.0",
+    "playwright": "^1.63.0",
+    "pngjs": "^7.0.0"
   }
 }
