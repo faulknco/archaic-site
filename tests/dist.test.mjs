@@ -21,3 +21,23 @@ for (const file of files) {
   test(`${file}: no Google Fonts request`, () => assert.doesNotMatch(html, /fonts\.(googleapis|gstatic)\.com/));
   test(`${file}: display face is preloaded`, () => assert.match(html, /<link rel="preload" href="\/_astro\/fonts\/[^"]+\.woff2" as="font"/));
 }
+
+// ── The Forge section ───────────────────────────────────────────────────────
+// One nav key, "forge", covers the index and the piece, so the link is marked
+// current on both. The gate's escape hatch lands on the section now that there
+// is a section to land on; before Task 13 it went to the homepage.
+const read = (p) => readFileSync(p, 'utf8');
+
+test('the spin gate goes back to /forge/', () => {
+  assert.match(read('dist/forge/spin/index.html'), /class="gate-back" href="\/forge\/"/);
+});
+
+for (const page of ['dist/forge/index.html', 'dist/forge/spin/index.html']) {
+  test(`${page}: the Forge nav link is current`, () => {
+    assert.match(read(page), /<a class="nav-link" href="\/forge" aria-current="page">Forge<\/a>/);
+  });
+}
+
+test('the Forge nav link is not current off the section', () => {
+  assert.match(read('dist/index.html'), /<a class="nav-link" href="\/forge">Forge<\/a>/);
+});

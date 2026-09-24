@@ -8,7 +8,7 @@ import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
 import { mkdirSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
 
-export const PAGES = ['/', '/deeper/', '/services/', '/principles/', '/404.html', '/forge/spin/'];
+export const PAGES = ['/', '/deeper/', '/forge/', '/services/', '/principles/', '/404.html', '/forge/spin/'];
 export const VIEWPORTS = { desktop: { width: 1440, height: 900 }, mobile: { width: 390, height: 844 } };
 const GROUND = { r: 6, g: 6, b: 6 };
 
