@@ -1,0 +1,565 @@
+---
+// Rule 110 — a one-dimensional cellular automaton, drawn as a scrolling tape.
+// Spec: docs/superpowers/specs/2026-09-25-forge-rule110-design.md
+import Base from '../../layouts/Base.astro';
+// The same module the page runs at runtime, read here at build time for the
+// readout tiles, so the table on the page and the table in the loop are one.
+import { NEIGHBOURHOODS, RULE } from '../../../public/forge/rule110/rule110.js';
+const binary = NEIGHBOURHOODS.map(([, , , o]) => o).join('');
+const tableLabel = `Rule ${RULE} lookup table: ` + NEIGHBOURHOODS.map(([l, c, r, o]) => `${l}${c}${r} gives ${o}`).join(', ');
+---
+<Base
+  title="Rule 110 — Archaic"
+  description="A one-dimensional cellular automaton running live in your browser. Eight entries in a lookup table, and enough to compute anything. Seed it with one cell, with noise, or by hand."
+  path="/forge/rule110/"
+  ogImage="/forge/rule110/og.png"
+  layout="scroll"
+  current="forge"
+>
+  <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="gate-inner">
+      <p class="gate-title" id="gate-title">THIS PAGE MOVES</p>
+      <p class="gate-text">It is a live automaton. Rows of cells scroll steadily up the screen for as long as it runs. It does not flash. Continuing here also opens the other pieces in the forge for this session, and Spin does flash. If flashing light affects you, go back.</p>
+      <div class="gate-actions">
+        <button class="gate-continue" id="begin" type="button">Continue</button>
+        <a class="gate-back" href="/forge/">Back</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Same arrangement as Spin: the gate is a modal over a page whose controls
+       stay in the document, and `inert` is what takes them out of the tab order.
+       The nav renders before this slot, so a synchronous inline script marks it
+       here; the sections below carry `inert` from the server; the footer renders
+       after the slot and is marked by the module before it does anything else.
+       start() lifts all of them together. -->
+  <script is:inline>
+    document.querySelector('.page--scroll .nav')?.setAttribute('inert', '');
+    document.body.classList.add('gated');
+  </script>
+
+  <div class="content" inert>
+    <header class="page-header">
+      <h1 class="page-title">RULE 110</h1>
+      <p class="page-intro">A one-dimensional cellular automaton. Eight entries in a lookup table, and enough to compute anything.</p>
+    </header>
+  </div>
+
+  <section class="tape-wrap" inert aria-label="The tape">
+    <div class="strip-row">
+      <canvas class="strip" id="strip" tabindex="-1" role="application" aria-label="Seed row, read only" aria-describedby="strip-hint" aria-readonly="true"></canvas>
+    </div>
+    <div class="tape-frame" id="tape-frame">
+      <!-- What a crawler and anyone whose script never runs actually sees.
+           Hidden the moment the first row is painted. -->
+      <img class="poster" id="poster" src="/forge/rule110/poster.webp" width="1600" height="600" decoding="async"
+           alt="The space-time diagram of Rule 110 from a random first row: a lattice of bone triangles on black, with gliders cutting diagonal paths through a repeating background." />
+      <canvas class="tape" id="tape" aria-hidden="true"></canvas>
+    </div>
+  </section>
+
+  <main class="content" id="panel" inert>
+    <div class="instrument">
+      <div class="group group-run">
+        <button class="control" id="play" type="button" aria-label="Pause the tape">Pause</button>
+        <p class="counter" id="counter" role="status" aria-live="polite">GENERATION 0</p>
+      </div>
+
+      <fieldset class="group">
+        <legend class="group-label">Seed</legend>
+        <div class="choices">
+          <span class="choice"><input type="radio" name="seed" id="seed-single" value="single" checked /><label class="control" for="seed-single">Single</label></span>
+          <span class="choice"><input type="radio" name="seed" id="seed-random" value="random" /><label class="control" for="seed-random">Random</label></span>
+          <span class="choice"><input type="radio" name="seed" id="seed-drawn" value="drawn" /><label class="control" for="seed-drawn">Drawn</label></span>
+          <label class="density" for="density"><span class="density-label">Density</span>
+            <input type="range" id="density" min="10" max="90" step="5" value="50" disabled aria-valuetext="half on" />
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset class="group" id="speed-group">
+        <legend class="group-label">Speed</legend>
+        <div class="choices">
+          <span class="choice"><input type="radio" name="speed" id="speed-slow" value="slow" /><label class="control" for="speed-slow">Slow</label></span>
+          <span class="choice"><input type="radio" name="speed" id="speed-normal" value="normal" checked /><label class="control" for="speed-normal">Normal</label></span>
+          <span class="choice"><input type="radio" name="speed" id="speed-fast" value="fast" /><label class="control" for="speed-fast">Fast</label></span>
+        </div>
+      </fieldset>
+
+      <p class="hint" id="strip-hint">In Drawn mode, click or drag across the seed row above the tape to toggle cells. With the row focused, the arrow keys move, Space toggles and Enter runs.</p>
+    </div>
+
+    <section class="rule" aria-labelledby="rule-label">
+      <p class="group-label" id="rule-label">The table</p>
+      <div class="tiles" role="img" aria-label={tableLabel}>
+        {NEIGHBOURHOODS.map(([l, c, r, o]) => (
+          <div class="tile" data-out={o}>
+            <i class:list={[{ on: l === 1 }]}></i><i class:list={[{ on: c === 1 }]}></i><i class:list={[{ on: r === 1 }]}></i>
+            <i class:list={['out', { on: o === 1 }]}></i>
+          </div>
+        ))}
+      </div>
+      <p class="rule-caption">Each tile is a cell with its two neighbours above the cell it becomes. Read the bottom row as a binary number, {binary}, and it is {RULE}. That is the whole rule, and it is fixed here.</p>
+    </section>
+
+    <div class="prose" id="prose">
+      <p>Rule 110 is a one-dimensional cellular automaton. There is a row of cells, each on or off, and a clock. On every tick each cell looks at itself and its two neighbours, finds that three-cell pattern in a fixed table of eight entries, and becomes whatever the table says. The table is the whole rule, and its eight outputs read as a binary number are where the name comes from. There is no memory beyond the previous row and no randomness once the first row is set.</p>
+      <p>A table that small should not be able to do much, and yet it can do everything a computer can. Matthew Cook proved it in 2004. Run the rule from a random row and the tape settles into a repeating background crossed by moving structures called gliders. Each glider is a signal. When two of them meet, the collision either destroys them, passes them through or emits new ones, and those outcomes can be arranged to act as logic. Wire enough of them together and the rows become a program, running one line at a time, with nothing but this table to drive it.</p>
+    </div>
+  </main>
+</Base>
+
+<style is:global>
+  /* The gate holds the page still while it is up. Base only sets this class for
+     the spin layout, so the inline script above adds it here. */
+  body.gated { overflow: hidden; }
+</style>
+
+<style>
+  .content { position: relative; z-index: 10; max-width: var(--measure); margin: 0 auto; padding: 0 var(--gutter); }
+  .page-header { padding: var(--s-80) 0 var(--s-32); }
+  .page-title { font-family: var(--font-display); font-size: var(--fs-h1); font-weight: 400; color: var(--text-display); letter-spacing: var(--ls-4); text-transform: uppercase; }
+  .page-intro { font-size: var(--fs-14); color: var(--text); line-height: var(--lh-body); max-width: 520px; margin-top: var(--s-24); }
+
+  /* The tape: full viewport width, opaque ground, one row per generation. */
+  .tape-wrap { position: relative; z-index: 10; margin: var(--s-16) 0 var(--s-40); }
+  .strip-row { width: 100%; overflow: hidden; }
+  .strip { display: block; height: 28px; background: var(--ground); cursor: default; }
+  .strip.editable { cursor: crosshair; }
+  .strip:focus-visible { outline: 1px solid var(--focus); outline-offset: 2px; }
+  .tape-frame { position: relative; width: 100%; overflow: hidden; background: var(--ground); border-top: 1px solid var(--panel-border); }
+  canvas.tape { display: block; }
+  .poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: right top; image-rendering: pixelated; }
+  .poster[hidden] { display: none; }
+
+  /* Instrument panel, in the forge's control style. */
+  .instrument {
+    padding: var(--s-20);
+    background: rgb(var(--ground-rgb) / 0.96);
+    border: 1px solid var(--panel-border);
+    display: flex; flex-wrap: wrap; align-items: flex-start; gap: var(--s-24) var(--s-40);
+  }
+  .group { border: 0; min-width: 0; }
+  .group-run { display: flex; align-items: baseline; gap: var(--s-24); width: 100%; }
+  .group-label {
+    font-size: var(--fs-9); letter-spacing: var(--ls-3); text-transform: uppercase; color: var(--text-label);
+    margin-bottom: var(--s-10); padding: 0;
+  }
+  .choices { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s-14) var(--s-20); }
+  .counter {
+    font-family: var(--font-display); text-transform: uppercase;
+    font-size: var(--fs-10); letter-spacing: var(--ls-3); color: var(--text-display);
+    font-variant-numeric: tabular-nums; min-width: 16ch;
+  }
+  .control {
+    font: inherit; font-size: var(--fs-10); letter-spacing: var(--ls-2); text-transform: uppercase;
+    color: var(--text-cta); background: none; border: 0; cursor: pointer; text-decoration: none;
+    transition: color 0.3s; padding: 0;
+  }
+  .control:hover { color: var(--text-hover); }
+  /* Native radios keep the keyboard behaviour; the label carries the look. */
+  .choice { position: relative; display: inline-flex; }
+  .choice input { position: absolute; opacity: 0; width: 1px; height: 1px; margin: 0; pointer-events: none; }
+  .choice input:checked + label { color: var(--text-display); }
+  .choice input:disabled + label { color: var(--text-faint); cursor: default; }
+  .choice input:focus-visible + label { outline: 1px solid var(--focus); outline-offset: 4px; }
+  .density { display: inline-flex; align-items: center; gap: var(--s-10); }
+  .density-label { font-size: var(--fs-9); letter-spacing: var(--ls-3); text-transform: uppercase; color: var(--text-label); }
+  .density input { width: 110px; accent-color: var(--text-display); margin: 0; }
+  .density input:disabled { opacity: 0.35; }
+  .hint { width: 100%; font-size: var(--fs-11); line-height: var(--lh-caption); color: var(--text-caption); }
+
+  /* The lookup table as tiles: three cells over the one they become. */
+  .rule { margin: var(--s-48) 0; }
+  .tiles { display: flex; flex-wrap: wrap; gap: var(--s-16) var(--s-20); margin-bottom: var(--s-16); }
+  .tile { display: grid; grid-template-columns: repeat(3, 12px); gap: 3px; justify-items: center; }
+  .tile i { display: block; width: 12px; height: 12px; border: 1px solid var(--rule-label); background: var(--ground); }
+  .tile i.on { background: var(--text-display); border-color: var(--text-display); }
+  .tile .out { grid-column: 2; }
+  .rule-caption { font-size: var(--fs-12); line-height: var(--lh-caption); color: var(--text-caption); max-width: 56ch; }
+
+  .prose p { font-size: var(--fs-13); line-height: var(--lh-article); color: var(--text); max-width: 62ch; margin-bottom: var(--s-24); }
+  .prose p:last-child { margin-bottom: 0; }
+
+  /* Photosensitivity gate, shared with Spin. The scroll chrome sits at z 10, so
+     the gate goes above it. */
+  .gate {
+    position: fixed; inset: 0; z-index: 30;
+    background: var(--ground);
+    display: flex; align-items: center; justify-content: center;
+    padding: var(--s-24);
+  }
+  .gate.closed { display: none; }
+  .gate-inner { max-width: 44ch; }
+  .gate-title {
+    font-family: var(--font-display); text-transform: uppercase;
+    font-size: var(--fs-h2); letter-spacing: var(--ls-2); color: var(--text-display);
+    margin-bottom: var(--s-20);
+  }
+  .gate-text { font-size: var(--fs-13); line-height: var(--lh-body); color: var(--text); margin-bottom: var(--s-32); }
+  .gate-actions { display: flex; gap: var(--s-32); align-items: center; }
+  .gate-continue, .gate-back {
+    font: inherit; font-size: var(--fs-10); letter-spacing: var(--ls-2); text-transform: uppercase;
+    background: none; border: 0; cursor: pointer; text-decoration: none;
+    color: var(--focus); transition: color 0.3s;
+  }
+  .gate-continue:hover, .gate-back:hover { color: var(--text-display); }
+
+  @media (max-width: 640px) {
+    .content { padding: 0 var(--gutter-mobile); }
+    .page-header { padding: var(--s-48) 0 var(--s-24); }
+    .instrument { padding: var(--s-16); gap: var(--s-20) var(--s-24); }
+    .group-run { flex-wrap: wrap; gap: var(--s-14) var(--s-24); }
+    .density { width: 100%; }
+  }
+</style>
+
+<script type="module" is:inline>
+  // is:inline because this imports a runtime path out of public/; Vite cannot
+  // resolve it at build time.
+  import { step, singleSeed, randomSeed, mulberry32 } from '/forge/rule110/rule110.js';
+
+  // ---- gate, wired first --------------------------------------------------
+  // The footer renders after this page's slot, so the parse-time script above
+  // could not reach it; it is marked here, before anything that could throw.
+  document.querySelector('.footer')?.setAttribute('inert', '');
+  const gate = document.getElementById('gate');
+  const begin = document.getElementById('begin');
+  begin.addEventListener('click', () => {
+    try { sessionStorage.setItem('spin-gate', 'ok'); } catch {}
+    start();
+  });
+  gate.addEventListener('keydown', (e) => {
+    if (e.key !== 'Tab' || gate.classList.contains('closed')) return;
+    const focusable = Array.from(gate.querySelectorAll('button, a[href]'));
+    const first = focusable[0], lastItem = focusable[focusable.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); lastItem.focus(); }
+    else if (!e.shiftKey && document.activeElement === lastItem) { e.preventDefault(); first.focus(); }
+  });
+
+  // ---- colours, from the tokens -------------------------------------------
+  // Written fallbacks, as on Spin: a missing token should cost the page its
+  // colours and say so, not abort the module and take the gate down with it.
+  // tests/tokens.test.mjs keeps these three in step with tokens.css.
+  const BONE_FALLBACK = [232, 228, 216];
+  const GROUND_FALLBACK = [6, 6, 6];
+  const COPPER_FALLBACK = [154, 106, 62];
+  function rgbToken(name, fallback) {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const parts = raw.split(/[\s,]+/).map(Number);
+    if (parts.length !== 3 || !parts.every(Number.isFinite)) {
+      console.error(`rule110: ${name} is not an "r g b" triplet (got "${raw}") — using the fallback`);
+      return fallback;
+    }
+    return parts;
+  }
+  const BONE = rgbToken('--bone-rgb', BONE_FALLBACK);
+  const GROUND = rgbToken('--ground-rgb', GROUND_FALLBACK);
+  const COPPER = rgbToken('--copper-rgb', COPPER_FALLBACK);
+  // A cell that has just switched on: bone with a little copper, the tint Spin
+  // puts on its domain walls.
+  const FRESH = BONE.map((b, i) => Math.round(b * 0.65 + COPPER[i] * 0.35));
+
+  const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const RATES = { slow: 8, normal: 30, fast: 90 };   // rows per second
+  const MAX_STEPS_PER_FRAME = 8;
+  const STATIC_ROWS = 400;                            // the reduced-motion diagram
+
+  // ---- elements -----------------------------------------------------------
+  const frame = document.getElementById('tape-frame');
+  const tape = document.getElementById('tape');
+  const strip = document.getElementById('strip');
+  const poster = document.getElementById('poster');
+  const playBtn = document.getElementById('play');
+  const counter = document.getElementById('counter');
+  const densityInput = document.getElementById('density');
+  const seedInputs = Array.from(document.querySelectorAll('input[name="seed"]'));
+  const speedInputs = Array.from(document.querySelectorAll('input[name="speed"]'));
+
+  const ctx = tape.getContext('2d', { alpha: false });
+  const sctx = strip.getContext('2d', { alpha: false });
+  const back = document.createElement('canvas');
+  const bctx = back.getContext('2d', { alpha: false });
+
+  // ---- state --------------------------------------------------------------
+  let cellPx = 4, cells = 0, rows = 0;
+  let img = null;                 // one pixel per cell, rows × cells
+  let seedRow = new Uint8Array(0);
+  let cur = null, nxt = null;
+  let history = [];               // the rows on the tape, oldest first
+  let generation = 0;
+  let mode = 'single', density = 0.5, speed = 'normal';
+  let rngSeed = (Math.random() * 4294967296) >>> 0;
+  let started = false, running = false;
+  let frames = 0;                 // paints since the gate
+  let cursor = 0;                 // keyboard cursor on the seed row
+
+  // ---- geometry -----------------------------------------------------------
+  function geometry() {
+    const w = frame.clientWidth || innerWidth;
+    cellPx = w < 640 ? 2 : Math.max(3, Math.ceil(w / 400));
+    const n = Math.ceil(w / cellPx);
+    rows = reduced ? STATIC_ROWS : Math.max(80, Math.min(200, Math.round((0.6 * innerHeight) / cellPx)));
+    const dpr = Math.min(devicePixelRatio || 1, 2);
+    tape.style.width = `${n * cellPx}px`; tape.style.height = `${rows * cellPx}px`;
+    tape.width = Math.round(n * cellPx * dpr); tape.height = Math.round(rows * cellPx * dpr);
+    strip.style.width = `${n * cellPx}px`;
+    strip.width = Math.round(n * cellPx * dpr); strip.height = Math.round(28 * dpr);
+    back.width = n; back.height = rows;
+    img = bctx.createImageData(n, rows);
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) { d[i] = GROUND[0]; d[i + 1] = GROUND[1]; d[i + 2] = GROUND[2]; d[i + 3] = 255; }
+    const changed = n !== cells;
+    cells = n;
+    return changed;
+  }
+
+  // ---- drawing ------------------------------------------------------------
+  function writeRow(y, row, prev) {
+    const d = img.data;
+    let j = y * cells * 4;
+    for (let x = 0; x < cells; x++, j += 4) {
+      const on = row[x] === 1;
+      const c = !on ? GROUND : (prev && prev[x] === 0) ? FRESH : BONE;
+      d[j] = c[0]; d[j + 1] = c[1]; d[j + 2] = c[2];
+    }
+  }
+  function paint() {
+    bctx.putImageData(img, 0, 0);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(back, 0, 0, tape.width, tape.height);
+    frames++;
+    if (frames === 1) poster.hidden = true;
+  }
+  // Rebuild the whole picture from history: after a resize, or a reseed.
+  function redraw() {
+    const d = img.data;
+    for (let i = 0; i < d.length; i += 4) { d[i] = GROUND[0]; d[i + 1] = GROUND[1]; d[i + 2] = GROUND[2]; }
+    const first = rows - history.length;
+    for (let k = 0; k < history.length; k++) writeRow(first + k, history[k], k > 0 ? history[k - 1] : null);
+    paint();
+  }
+  function drawStrip() {
+    const dpr = strip.width / (cells * cellPx);
+    const w = cellPx * dpr, h = strip.height;
+    sctx.fillStyle = `rgb(${GROUND.join(' ')})`;
+    sctx.fillRect(0, 0, strip.width, strip.height);
+    sctx.fillStyle = `rgb(${BONE.join(' ')})`;
+    for (let x = 0; x < cells; x++) if (seedRow[x]) sctx.fillRect(x * w, 0, w, h);
+    if (mode === 'drawn' && document.activeElement === strip) {
+      sctx.strokeStyle = `rgb(${COPPER.join(' ')})`;
+      sctx.lineWidth = Math.max(1, dpr);
+      sctx.strokeRect(cursor * w + 0.5, 0.5, Math.max(w - 1, 1), h - 1);
+    }
+  }
+
+  // ---- stepping -----------------------------------------------------------
+  function advance() {
+    step(cur, nxt);
+    const t = cur; cur = nxt; nxt = t;
+    generation++;
+    history.push(Uint8Array.from(cur));
+    if (history.length > rows) history.shift();
+    img.data.copyWithin(0, cells * 4);
+    writeRow(rows - 1, cur, history.length > 1 ? history[history.length - 2] : null);
+  }
+  // Clear the tape and start again from the seed row.
+  function reseed() {
+    if (!started) return;   // nothing exists to draw into before the gate
+    cur = Uint8Array.from(seedRow); nxt = new Uint8Array(cells);
+    history = [Uint8Array.from(cur)];
+    generation = 0;
+    if (reduced) for (let g = 1; g < STATIC_ROWS; g++) advance();
+    redraw(); drawStrip();
+    syncCounter(true);
+  }
+  function makeSeed() {
+    if (mode === 'single') seedRow = singleSeed(cells);
+    else if (mode === 'random') seedRow = randomSeed(cells, density, mulberry32(rngSeed));
+    else {
+      const next = new Uint8Array(cells);
+      next.set(seedRow.subarray(0, Math.min(cells, seedRow.length)));
+      seedRow = next;
+    }
+    cursor = Math.min(cursor, cells - 1);
+  }
+
+  // ---- the clock ----------------------------------------------------------
+  let rafId = 0, lastT = 0, acc = 0;
+  function schedule() { if (!rafId) rafId = requestAnimationFrame(tick); }
+  function tick(t) {
+    rafId = 0;
+    if (!running || document.hidden) { lastT = 0; return; }
+    const dt = lastT ? Math.min((t - lastT) / 1000, 0.25) : 0;
+    lastT = t;
+    acc = Math.min(acc + dt * RATES[speed], MAX_STEPS_PER_FRAME);
+    let n = Math.floor(acc);
+    acc -= n;
+    if (n > 0) { for (; n > 0; n--) advance(); paint(); }
+    syncCounter(false);
+    schedule();
+  }
+  function play() {
+    if (reduced) { if (mode === 'random') rngSeed = (Math.random() * 4294967296) >>> 0; makeSeed(); reseed(); return; }
+    if (running) return;
+    running = true; lastT = 0; acc = 0;
+    syncPlay(); schedule();
+  }
+  function pause() {
+    if (!running) return;
+    running = false;
+    syncPlay(); syncCounter(true);
+  }
+  function syncPlay() {
+    if (reduced) { playBtn.textContent = 'Redraw'; playBtn.setAttribute('aria-label', 'Redraw the diagram'); return; }
+    playBtn.textContent = running ? 'Pause' : 'Play';
+    playBtn.setAttribute('aria-label', running ? 'Pause the tape' : 'Run the tape');
+  }
+  // A live region written thirty times a second would talk over itself, so the
+  // counter is written at most twice a second while running and at once when
+  // something changes it.
+  let lastWrite = 0;
+  function syncCounter(force) {
+    const now = performance.now();
+    if (!force && now - lastWrite < 500) return;
+    lastWrite = now;
+    const text = `GENERATION ${generation}`;
+    if (counter.textContent !== text) counter.textContent = text;
+  }
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) { lastT = 0; schedule(); } });
+
+  // ---- controls -----------------------------------------------------------
+  playBtn.addEventListener('click', () => (running ? pause() : play()));
+  function setMode(next) {
+    mode = next;
+    densityInput.disabled = mode !== 'random';
+    const editable = mode === 'drawn';
+    strip.classList.toggle('editable', editable);
+    strip.tabIndex = editable ? 0 : -1;
+    strip.setAttribute('aria-readonly', editable ? 'false' : 'true');
+    strip.setAttribute('aria-label', editable ? 'Seed row: arrow keys move, Space toggles, Enter runs' : 'Seed row, read only');
+    if (mode === 'random') rngSeed = (Math.random() * 4294967296) >>> 0;
+    if (mode === 'drawn') { seedRow = new Uint8Array(cells); pause(); }
+    makeSeed(); reseed();
+  }
+  for (const input of seedInputs) input.addEventListener('change', () => { if (input.checked) setMode(input.value); });
+  function setDensity(d) {
+    density = d;
+    densityInput.value = String(Math.round(d * 100));
+    densityInput.setAttribute('aria-valuetext', d === 0.5 ? 'half on' : `${Math.round(d * 100)} percent on`);
+    if (mode === 'random') { makeSeed(); reseed(); }
+  }
+  densityInput.addEventListener('input', () => setDensity(Number(densityInput.value) / 100));
+  function setSpeed(s) {
+    if (!(s in RATES)) return;
+    speed = s;
+    for (const input of speedInputs) input.checked = input.value === s;
+  }
+  for (const input of speedInputs) input.addEventListener('change', () => { if (input.checked) setSpeed(input.value); });
+  if (reduced) {
+    for (const input of speedInputs) input.disabled = true;
+    document.getElementById('speed-group').setAttribute('aria-disabled', 'true');
+  }
+
+  // ---- drawing the seed by hand -------------------------------------------
+  function cellAt(clientX) {
+    const r = strip.getBoundingClientRect();
+    return Math.max(0, Math.min(cells - 1, Math.floor((clientX - r.left) / cellPx)));
+  }
+  function toggle(x) { seedRow[x] = seedRow[x] ? 0 : 1; reseed(); }
+  let stroke = null;   // { value, last } while the pointer is down
+  strip.addEventListener('pointerdown', (e) => {
+    if (mode !== 'drawn' || !started) return;
+    e.preventDefault();
+    const x = cellAt(e.clientX);
+    stroke = { value: seedRow[x] ? 0 : 1, last: x };
+    seedRow[x] = stroke.value; cursor = x;
+    strip.setPointerCapture(e.pointerId);
+    reseed();
+  });
+  strip.addEventListener('pointermove', (e) => {
+    if (!stroke) return;
+    const x = cellAt(e.clientX);
+    const lo = Math.min(x, stroke.last), hi = Math.max(x, stroke.last);
+    let changed = false;
+    for (let i = lo; i <= hi; i++) { if (seedRow[i] !== stroke.value) { seedRow[i] = stroke.value; changed = true; } }
+    stroke.last = x; cursor = x;
+    if (changed) reseed();
+  });
+  const endStroke = () => { stroke = null; };
+  strip.addEventListener('pointerup', endStroke);
+  strip.addEventListener('pointercancel', endStroke);
+  strip.addEventListener('keydown', (e) => {
+    if (mode !== 'drawn' || !started) return;
+    const stepBy = e.shiftKey ? 10 : 1;
+    if (e.key === 'ArrowLeft') cursor = Math.max(0, cursor - stepBy);
+    else if (e.key === 'ArrowRight') cursor = Math.min(cells - 1, cursor + stepBy);
+    else if (e.key === 'Home') cursor = 0;
+    else if (e.key === 'End') cursor = cells - 1;
+    else if (e.key === ' ') { e.preventDefault(); toggle(cursor); return; }
+    else if (e.key === 'Enter') { e.preventDefault(); play(); return; }
+    else return;
+    e.preventDefault();
+    drawStrip();
+  });
+  strip.addEventListener('focus', drawStrip);
+  strip.addEventListener('blur', drawStrip);
+
+  // ---- resize -------------------------------------------------------------
+  // The address bar on a phone changes the height on every scroll; only a change
+  // in the number of cells restarts the tape. A height-only change keeps the
+  // history and redraws it into the new row count.
+  let resizeTimer = 0;
+  addEventListener('resize', () => {
+    if (!started) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      if (geometry()) { makeSeed(); reseed(); }
+      else { if (history.length > rows) history = history.slice(history.length - rows); redraw(); drawStrip(); }
+    }, 120);
+  });
+
+  // ---- start (only after the gate) ----------------------------------------
+  function start() {
+    if (started) return;
+    started = true;
+    document.body.classList.remove('gated');
+    gate.classList.add('closed');
+    for (const el of document.querySelectorAll('[inert]')) el.removeAttribute('inert');
+    geometry(); makeSeed(); reseed();
+    syncPlay();
+    if (!reduced) play();
+  }
+
+  // ---- test hook ----------------------------------------------------------
+  window.__rule110 = {
+    get frames() { return frames; },
+    get generation() { return generation; },
+    get running() { return running; },
+    get reduced() { return reduced; },
+    get cellPx() { return cellPx; },
+    get cells() { return cells; },
+    get rows() { return rows; },
+    get mode() { return mode; },
+    get speed() { return speed; },
+    get density() { return density; },
+    get historyLength() { return history.length; },
+    play, pause, setSpeed, setDensity,
+    seed(m) { const input = seedInputs.find((i) => i.value === m); if (input) { input.checked = true; setMode(m); } },
+    // A reproducible random row, for the poster script and the QA.
+    seedRandom(d, s) { rngSeed = s >>> 0; density = d; mode = 'random'; seedInputs.find((i) => i.value === 'random').checked = true; densityInput.disabled = false; makeSeed(); reseed(); },
+    seedBits() { return Array.from(seedRow).join(''); },
+    rowBits() { return cur ? Array.from(cur).join('') : ''; },
+    sample() {
+      if (!cur) return null;
+      let on = 0; for (let i = 0; i < cells; i++) on += cur[i];
+      let seedOn = 0; for (let i = 0; i < cells; i++) seedOn += seedRow[i];
+      return { onFraction: on / cells, seedOn };
+    },
+  };
+
+  // ---- gate: the second visit ---------------------------------------------
+  let seen = false;
+  try { seen = sessionStorage.getItem('spin-gate') === 'ok'; } catch {}
+  if (seen) start(); else begin.focus();
+</script>
