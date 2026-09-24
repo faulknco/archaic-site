@@ -42,6 +42,10 @@
   --text-faint:   var(--grey-32);
   --text-nav:     var(--grey-35);
   --text-cta:     var(--grey-41);
+  /* Captions (/deeper's tech lines) were #444 and merged into --grey-41 alongside
+     --text-cta. Same value today, separate role, so restyling a call to action
+     never drags a caption with it. */
+  --text-caption: var(--grey-41);
   --text-strong:  var(--grey-45);
   --text:         var(--grey-52);
   --text-hover:   var(--grey-63);
