@@ -172,6 +172,8 @@ import { Font } from 'astro:assets';
     let frames = 0;
     let pending = false;      // a tick is in flight
     let visible = !document.hidden;
+    let paused = false;       // the page has stopped asking for ticks
+    let resets = 0;           // frames that came back flagged as a fresh draw
 
     // ---- rendering -------------------------------------------------------
     function resize() {
@@ -221,6 +223,7 @@ import { Font } from 'astro:assets';
       if (m.type === 'frame') {
         last = new Int8Array(m.spins);
         frames++;
+        if (m.reset) resets++;
         paint();
         if (frames === 1) canvas.classList.add('live');
         pending = false;
@@ -230,10 +233,16 @@ import { Font } from 'astro:assets';
     }
 
     function loop() {
-      if (!visible || !worker) return;
+      if (!visible || !worker || paused) return;
       if (!pending) { pending = true; worker.postMessage({ type: 'tick', T: temperature() }); }
       requestAnimationFrame(loop);
     }
+    // Pause stops the request side only. A tick already in flight still comes
+    // back and paints one last frame; there is no way to recall it, and the
+    // worker has no queue behind it, so nothing accumulates while paused.
+    function pause() { paused = true; drifting = false; clearTimeout(idleTimer); }
+    function resume() { if (!paused) return; paused = false; loop(); armIdle(); }
+    function reset() { if (worker) worker.postMessage({ type: 'reset' }); }
     document.addEventListener('visibilitychange', () => {
       visible = !document.hidden;
       if (visible) loop();
@@ -253,6 +262,7 @@ import { Font } from 'astro:assets';
     function armIdle() {
       drifting = false;
       clearTimeout(idleTimer);
+      if (paused) return;   // a paused lattice must not be dragged by the drift
       if (reduced || !worker) return;
       idleTimer = setTimeout(() => { drifting = true; drift(); }, IDLE_MS);
     }
@@ -280,7 +290,9 @@ import { Font } from 'astro:assets';
     // ---- test hook --------------------------------------------------------
     window.__spin = {
       get frames() { return frames; },
-      temperature,
+      get resets() { return resets; },
+      get paused() { return paused; },
+      temperature, pause, resume, reset,
       sample() {
         if (!last) return null;
         let up = 0, agree = 0;

@@ -37,6 +37,26 @@ bottom.agreement > 0.9 ? ok(`bottom agreement ${bottom.agreement.toFixed(3)} (do
 const T = await page.evaluate(() => window.__spin.temperature());
 Math.abs(T - 0.6) < 1e-6 ? ok('bottom temperature is the cold end') : fail(`bottom T ${T}`);
 
+// ---- pause / reset / resume -------------------------------------------------
+// Settle first: pause() cannot cancel a tick already in flight, so one more
+// frame may still land. Wait for it, then require dead silence.
+await page.evaluate(() => window.__spin.pause());
+await page.waitForTimeout(300);
+const f1 = await page.evaluate(() => window.__spin.frames);
+await page.waitForTimeout(500);
+const f2 = await page.evaluate(() => window.__spin.frames);
+f2 === f1 ? ok('paused: no frames') : fail(`paused but frames advanced ${f1} \u2192 ${f2}`);
+
+// reset while paused at the cold end: the only new frame is the randomised one
+await page.evaluate(() => window.__spin.reset());
+await page.waitForFunction(() => window.__spin.resets === 1, null, { timeout: 5000 });
+const fresh = await page.evaluate(() => window.__spin.sample());
+fresh.agreement < 0.7 ? ok(`reset: agreement ${fresh.agreement.toFixed(3)} (noise again)`) : fail(`reset did not randomise: ${fresh.agreement}`);
+
+await page.evaluate(() => window.__spin.resume());
+await page.waitForFunction((n) => window.__spin.frames > n + 10, f2, { timeout: 10000 });
+ok('resumed: frames flowing');
+
 consoleErrors.length === 0 ? ok('no console errors') : fail(`console errors: ${consoleErrors.join(' | ')}`);
 
 await browser.close();
