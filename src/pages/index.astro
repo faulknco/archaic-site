@@ -1,103 +1,48 @@
 ---
+import Base from '../layouts/Base.astro';
 ---
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Archaic — Software Studio, Dublin</title>
-  <meta name="description" content="Archaic Limited builds software that endures. No trends. No bloat. Just work that holds." />
+<Base
+  title="Archaic — Software Studio, Dublin"
+  description="Archaic Limited builds software that endures. No trends. No bloat. Just work that holds."
+  path="/"
+  layout="hero"
+  ghostFont
+>
+  <Fragment slot="head">
+    <script type="application/ld+json" is:inline>{"@context":"https://schema.org","@type":"Organization","name":"Archaic Limited","alternateName":"Archaic","url":"https://archaic.ie/","logo":"https://archaic.ie/apple-touch-icon.png","email":"hello@archaic.ie","foundingDate":"2026-03-25","areaServed":"IE"}</script>
+  </Fragment>
 
-  <link rel="canonical" href="https://archaic.ie/" />
+  <div slot="page-start" class="ghost-text" aria-hidden="true">ARCHAIC</div>
 
-  <!-- Favicon -->
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <main class="hero">
+    <p class="hero-eyebrow">Software Studio — Dublin</p>
+    <h1 class="hero-headline">BUILT TO LAST.<br />NOT TO IMPRESS.</h1>
+    <p class="hero-body">
+      Archaic Limited builds software that endures.<br />
+      No trends. No bloat. Just work that holds.
+    </p>
+    <a class="hero-cta" href="mailto:hello@archaic.ie">
+      Get in touch <span class="arrow" aria-hidden="true">→</span>
+    </a>
+  </main>
+</Base>
 
-  <!-- Open Graph -->
-  <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://archaic.ie/" />
-  <meta property="og:title" content="Archaic — Software Studio, Dublin" />
-  <meta property="og:description" content="Archaic Limited builds software that endures. No trends. No bloat. Just work that holds." />
-  <meta property="og:image" content="https://archaic.ie/og.png" />
+<style is:global>
+  /* Homepage entrance choreography on the shared chrome. Global because Nav and
+     Footer render inside Base, so a scoped rule would never reach them. */
+  .page--hero .nav    { opacity: 0; animation: fadeUp 0.8s ease forwards; animation-delay: 0.1s; }
+  .page--hero .footer { opacity: 0; animation: fadeUp 0.8s ease forwards; animation-delay: 1.1s; }
+</style>
 
-  <!-- Twitter -->
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Archaic — Software Studio, Dublin" />
-  <meta name="twitter:description" content="Archaic Limited builds software that endures. No trends. No bloat. Just work that holds." />
-  <meta name="twitter:image" content="https://archaic.ie/og.png" />
-
-  <!-- Structured data -->
-  <script type="application/ld+json" is:inline>{"@context":"https://schema.org","@type":"Organization","name":"Archaic Limited","alternateName":"Archaic","url":"https://archaic.ie/","logo":"https://archaic.ie/apple-touch-icon.png","email":"hello@archaic.ie","foundingDate":"2026-03-25","areaServed":"IE"}</script>
-
-  <!-- Analytics -->
-
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;900&family=Space+Grotesk:wght@300;400;500;700&family=Uncial+Antiqua&display=swap" rel="stylesheet" />
-  <style>
-  *, *::before, *::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-  }
-
-  html, body {
-    height: 100%;
-    background: #060606;
-    color: #888;
-    font-family: 'Space Grotesk', sans-serif;
-    overflow: hidden;
-  }
-
-  /* ── PAGE ── */
-  .page {
-    height: 100vh;
-    display: grid;
-    grid-template-rows: auto 1fr auto;
-    position: relative;
-    overflow: hidden;
-  }
-
-  /* ── BACKGROUND IMAGE (B) ── */
-  .bg-image {
-    position: absolute;
-    inset: 0;
-    background-image: url('/stone.webp');
-    background-size: cover;
-    background-position: center 40%;
-    opacity: 0;
-    animation: bgFadeIn 2.4s ease forwards;
-    animation-delay: 0.3s;
-    z-index: 0;
-  }
-
-  .bg-image::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(
-      135deg,
-      rgba(6,6,6,0.96) 0%,
-      rgba(6,6,6,0.92) 40%,
-      rgba(6,6,6,0.85) 100%
-    );
-  }
-
-  @keyframes bgFadeIn {
-    from { opacity: 0; }
-    to   { opacity: 0.6; }
-  }
-
-  /* ── GHOST TEXT (A) ── */
+<style>
+  /* ── GHOST TEXT ── */
   .ghost-text {
     position: absolute;
-    font-family: 'Uncial Antiqua', serif;
+    font-family: var(--font-ghost);
     font-size: 13vw;
     font-weight: 400;
     color: transparent;
-    -webkit-text-stroke: 1px rgba(255,255,255,0.045);
+    -webkit-text-stroke: 1px rgb(var(--white-rgb) / 0.045);
     letter-spacing: 0.06em;
     right: 0;
     left: 0;
@@ -124,111 +69,25 @@
     }
   }
 
-  /* ── CURSOR GLOW (C) ── */
-  #cursor-glow {
-    position: fixed;
-    width: 600px;
-    height: 600px;
-    border-radius: 50%;
-    background: radial-gradient(circle, rgba(232,228,216,0.04) 0%, transparent 70%);
-    pointer-events: none;
-    left: -300px;
-    top: -300px;
-    transition: transform 0.8s cubic-bezier(0.23, 1, 0.32, 1);
-    z-index: 5;
-  }
-
-  /* ── GRAIN ── */
-  .grain {
-    position: fixed;
-    inset: -200%;
-    width: 400%;
-    height: 400%;
-    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
-    opacity: 0.35;
-    pointer-events: none;
-    z-index: 20;
-    animation: grainShift 0.5s steps(1) infinite;
-  }
-
-  @keyframes grainShift {
-    0%   { transform: translate(0, 0); }
-    25%  { transform: translate(-2%, -3%); }
-    50%  { transform: translate(3%, 1%); }
-    75%  { transform: translate(-1%, 4%); }
-    100% { transform: translate(2%, -2%); }
-  }
-
-  /* ── NAV ── */
-  .nav {
-    padding: 32px 56px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 10;
-    opacity: 0;
-    animation: fadeUp 0.8s ease forwards;
-    animation-delay: 0.1s;
-  }
-
-  .nav-logo {
-    display: block;
-    height: 72px;
-    width: auto;
-  }
-
-  .nav-contact {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #3a3a3a;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-
-  .nav-contact:hover {
-    color: #888;
-  }
-
-  .nav-links {
-    display: flex;
-    align-items: center;
-    gap: 32px;
-  }
-
-  .nav-link {
-    font-size: 10px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    color: #3a3a3a;
-    text-decoration: none;
-    transition: color 0.3s;
-  }
-
-  .nav-link:hover {
-    color: #888;
-  }
-
   /* ── HERO ── */
   .hero {
     display: flex;
     flex-direction: column;
     justify-content: center;
-    padding: 0 56px;
+    padding: 0 var(--gutter);
     position: relative;
     z-index: 10;
   }
 
   .hero-eyebrow {
-    font-size: 10px;
-    letter-spacing: 4px;
+    font-size: var(--fs-10);
+    letter-spacing: var(--ls-4);
     text-transform: uppercase;
-    color: #2e2e2e;
-    margin-bottom: 28px;
+    color: var(--text-label);
+    margin-bottom: var(--s-28);
     display: flex;
     align-items: center;
-    gap: 14px;
+    gap: var(--s-14);
     opacity: 0;
     animation: fadeUp 0.8s ease forwards;
     animation-delay: 0.5s;
@@ -239,18 +98,18 @@
     display: block;
     width: 28px;
     height: 1px;
-    background: #242424;
+    background: var(--rule-label);
     flex-shrink: 0;
   }
 
   .hero-headline {
-    font-family: 'Cinzel', serif;
-    font-size: clamp(32px, 5vw, 56px);
+    font-family: var(--font-display);
+    font-size: var(--fs-hero);
     font-weight: 400;
-    color: #e8e4d8;
+    color: var(--text-display);
     line-height: 1.2;
-    letter-spacing: 2px;
-    margin-bottom: 28px;
+    letter-spacing: var(--ls-2);
+    margin-bottom: var(--s-28);
     max-width: 580px;
     opacity: 0;
     animation: fadeUp 0.9s ease forwards;
@@ -258,11 +117,11 @@
   }
 
   .hero-body {
-    font-size: 14px;
-    color: #686868;
-    line-height: 1.75;
+    font-size: var(--fs-14);
+    color: var(--text);
+    line-height: var(--lh-body);
     max-width: 400px;
-    margin-bottom: 44px;
+    margin-bottom: var(--s-44);
     opacity: 0;
     animation: fadeUp 0.9s ease forwards;
     animation-delay: 0.8s;
@@ -271,11 +130,11 @@
   .hero-cta {
     display: inline-flex;
     align-items: center;
-    gap: 14px;
-    font-size: 10px;
-    letter-spacing: 3px;
+    gap: var(--s-14);
+    font-size: var(--fs-10);
+    letter-spacing: var(--ls-3);
     text-transform: uppercase;
-    color: #4a4a4a;
+    color: var(--text-cta);
     text-decoration: none;
     opacity: 0;
     animation: fadeUp 0.9s ease forwards;
@@ -285,7 +144,7 @@
   }
 
   .hero-cta:hover {
-    color: #888;
+    color: var(--text-hover);
   }
 
   .hero-cta .arrow {
@@ -297,174 +156,15 @@
     transform: translateX(6px);
   }
 
-  /* ── FOOTER ── */
-  .footer {
-    padding: 22px 56px;
-    border-top: 1px solid #0f0f0f;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    position: relative;
-    z-index: 10;
-    opacity: 0;
-    animation: fadeUp 0.8s ease forwards;
-    animation-delay: 1.1s;
-  }
-
-  .footer-copy,
-  .footer-location {
-    font-size: 9px;
-    letter-spacing: 1.5px;
-    color: #222;
-    text-transform: uppercase;
-  }
-
-  .footer-meta {
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 6px;
-  }
-
-  /* ── SHARED ANIMATION ── */
-  @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(14px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
-
   /* ── MOBILE ── */
   @media (max-width: 640px) {
-    html, body {
-      overflow: auto;
-    }
-
-    .page {
-      height: auto;
-      min-height: 100vh;
-    }
-
-    .nav {
-      padding: 24px 28px;
-    }
-
     .hero {
-      padding: 60px 28px;
-    }
-
-    .footer {
-      padding: 20px 28px;
-      align-items: flex-start;
-      flex-direction: column;
-      gap: 10px;
-    }
-
-    .footer-meta {
-      align-items: flex-start;
+      padding: var(--s-60) var(--gutter-mobile);
     }
 
     .ghost-text {
       font-size: 35vw;
-      -webkit-text-stroke: 1px rgba(255,255,255,0.03);
-    }
-
-    #cursor-glow {
-      display: none;
-    }
-
-    .nav-links {
-      gap: 20px;
-    }
-  }
-
-  /* ── ACCESSIBILITY ── */
-  a:focus-visible {
-    outline: 1px solid #8a8a8a;
-    outline-offset: 4px;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-    }
-    .reveal {
-      opacity: 1;
-      transform: none;
+      -webkit-text-stroke: 1px rgb(var(--white-rgb) / 0.03);
     }
   }
 </style>
-  <!-- Privacy-friendly analytics by Plausible -->
-  <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js"></script>
-  <script>
-    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
-    plausible.init()
-  </script>
-</head>
-<body>
-
-  <!-- Cursor glow element (C) -->
-  <div id="cursor-glow" aria-hidden="true"></div>
-
-  <!-- Film grain overlay -->
-  <div class="grain" aria-hidden="true"></div>
-
-  <div class="page">
-    <!-- Background image (B) -->
-    <div class="bg-image" aria-hidden="true"></div>
-
-    <!-- Ghost text (A) -->
-    <div class="ghost-text" aria-hidden="true">ARCHAIC</div>
-
-    <!-- Nav -->
-    <nav class="nav">
-      <img class="nav-logo" src="/logo.webp" alt="Archaic" />
-      <div class="nav-links">
-        <a class="nav-link" href="/deeper">Deeper</a>
-        <a class="nav-link" href="/services">Services</a>
-        <a class="nav-link" href="/principles">Principles</a>
-        <a class="nav-contact" href="mailto:hello@archaic.ie">hello@archaic.ie</a>
-      </div>
-    </nav>
-
-    <!-- Hero -->
-    <main class="hero">
-      <p class="hero-eyebrow">Software Studio — Dublin</p>
-      <h1 class="hero-headline">BUILT TO LAST.<br />NOT TO IMPRESS.</h1>
-      <p class="hero-body">
-        Archaic Limited builds software that endures.<br />
-        No trends. No bloat. Just work that holds.
-      </p>
-      <a class="hero-cta" href="mailto:hello@archaic.ie">
-        Get in touch <span class="arrow" aria-hidden="true">→</span>
-      </a>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-      <span class="footer-copy">© {new Date().getFullYear()} Archaic Limited</span>
-      <div class="footer-meta">
-        <span class="footer-location">Registered in Ireland · Co. No. 811858</span>
-      </div>
-    </footer>
-  </div>
-
-<script>
-  const glow = document.getElementById('cursor-glow');
-  if (glow) {
-    document.addEventListener('mousemove', (e) => {
-      const x = e.clientX - 300;
-      const y = e.clientY - 300;
-      glow.style.transform = `translate(${x}px, ${y}px)`;
-    });
-  }
-</script>
-
-</body>
-</html>
