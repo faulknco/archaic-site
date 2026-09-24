@@ -81,3 +81,13 @@ Branch `forge/spin`, one PR into `main`. Merge deploys. Vault repo overview and 
 
 - Section renamed from `/lab` to `/forge` (Connor's choice from forge / magic / runes / rites). All paths above read `/forge/spin`.
 - Photosensitivity gate: the page opens on a full-screen notice ("THIS PAGE FLASHES", Cinzel uppercase, with a plain-language sentence and Continue / Back). The worker is not created and nothing moves until Continue is pressed. The choice is remembered for the browser session only (`sessionStorage`, wrapped in try/catch), so a return visit in a new tab shows the notice again. The QA script asserts that no frames flow before the gate and clicks through it.
+
+## Ink wash (approved by Connor 2026-09-24, after a visual comparison of four directions)
+
+Direction chosen: **B, ink wash**, settling dark, with copper on the domain walls. Physics unchanged; the change is rendering plus a small external field.
+
+- **Field.** The page blends each new frame into a smoothed field (exponential moving average). The blend weight follows temperature: 0.6 when hot, so the noise stays a live stipple, down to 0.18 when cold, so the domains breathe.
+- **Shader.** WebGL2 fragment shader: cover-fit of the 256² field texture with linear filtering plus a light 5-tap cross blur; contrast curve `0.5 + 0.5·tanh(4(t − 0.5))` so the wash stays inky rather than grey; palette `mix(ground, bone, t)` plus a copper tint weighted by `(4t(1−t))^1.5 · 0.35` (strongest on domain walls); per-pixel film grain of ±0.02 that changes every frame. `preserveDrawingBuffer` is on so Save and the poster script can read the canvas. Canvas 2D fallback draws the same field without copper or grain.
+- **Colours** come from tokens: `--ground-rgb`, `--bone-rgb` and a new `--copper-rgb: 154 106 62`, read with the same fallback mechanism as the other two.
+- **Settling dark.** The worker accepts an external field with each tick (`sim.set_params(1, h)` when it changes). `h` is 0 at and above the critical point (2.269), so the critical clusters are unbiased; −0.015 in a window just below it (ramp in 2.27→2.0, full 2.0→1.7, ramp out 1.7→1.4); 0 when cold, so the last bone islands freeze in rather than erode. Measured over gradual scrolls: the cold end always has ground in the majority, with between none and roughly a third of the screen left as bone islands, different every visit.
+- **QA.** `scripts/qa-spin.mjs` additionally asserts the cold end has `upFraction < 0.45` and reports the active renderer. The poster is regenerated from the new look with `npm run poster:spin`.

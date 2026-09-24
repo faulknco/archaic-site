@@ -28,6 +28,7 @@
   /* rgb triplets for the few alpha uses (gradients, glow, ghost stroke) */
   --ground-rgb: 6 6 6;
   --bone-rgb: 232 228 216;
+  --copper-rgb: 154 106 62;   /* Spin's domain-wall tint; only the ink-wash shader reads it */
   --white-rgb: 255 255 255;
 
   /* roles */

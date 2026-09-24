@@ -87,6 +87,11 @@ top.agreement < 0.7 ? ok(`top agreement ${top.agreement.toFixed(3)} (noise)`) : 
 await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
 await page.waitForTimeout(6000);
 const bottom = await page.evaluate(() => window.__spin.sample());
+// Ink wash (2026-09-24): the cold phase must settle with ground in the majority
+// (the windowed external field picks the sign); bone islands may survive.
+bottom.upFraction < 0.45 ? ok(`bottom settles dark (upFraction ${bottom.upFraction.toFixed(3)})`) : fail(`bottom did not settle dark: upFraction ${bottom.upFraction}`);
+const renderer = await page.evaluate(() => window.__spin.renderer);
+renderer === 'webgl' || renderer === 'canvas' ? ok(`renderer: ${renderer}`) : fail(`renderer: ${renderer}`);
 bottom.agreement > 0.9 ? ok(`bottom agreement ${bottom.agreement.toFixed(3)} (domains)`) : fail(`bottom agreement ${bottom.agreement}`);
 
 const T = await page.evaluate(() => window.__spin.temperature());
