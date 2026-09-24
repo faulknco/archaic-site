@@ -1,0 +1,15 @@
+---
+// src/components/Nav.astro
+interface Props { current?: 'deeper' | 'forge' | 'services' | 'principles' }
+const { current } = Astro.props;
+const cur = (k: string) => (current === k ? 'page' : undefined);
+---
+<nav class="nav">
+  <a class="nav-mark" href="/"><img class="nav-logo" src="/logo.webp" alt="Archaic" /></a>
+  <div class="nav-links">
+    <a class="nav-link" href="/deeper" aria-current={cur('deeper')}>Deeper</a>
+    <a class="nav-link" href="/services" aria-current={cur('services')}>Services</a>
+    <a class="nav-link" href="/principles" aria-current={cur('principles')}>Principles</a>
+    <a class="nav-contact" href="mailto:hello@archaic.ie">hello@archaic.ie</a>
+  </div>
+</nav>
