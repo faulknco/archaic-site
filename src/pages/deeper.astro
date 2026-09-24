@@ -271,11 +271,14 @@ const rendered = await Promise.all(
      page moved onto Base its own reset and its own `.journal-article-body p`
      rule were BOTH scoped, so neither ever matched a collection-rendered
      paragraph and the journal has always rendered with UA margins. global.css
-     zeroes them for real, so the spacing has to be restated here to keep the
-     page pixel-identical. Raise it to var(--s-16) when journal typography is
-     deliberately revisited; that is a visible change, not a migration. */
+     zeroes them for real, so the spacing has to be restated here.
+
+     It was `1em 0` through the migration, which at 14 px type meant 14 px of
+     air between paragraphs and no token behind it. Journal typography is being
+     revisited here on purpose: 16 px, off the space scale, like everything
+     else on the page. This is a visible change on /deeper only. */
   .journal-article-body :global(p) {
-    margin: 1em 0;
+    margin: var(--s-16) 0;
   }
 
   /* ── CONTACT CTA ── */
