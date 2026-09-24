@@ -57,6 +57,20 @@ await page.evaluate(() => window.__spin.resume());
 await page.waitForFunction((n) => window.__spin.frames > n + 10, f2, { timeout: 10000 });
 ok('resumed: frames flowing');
 
+// ---- the page around the lattice ------------------------------------------
+// The scroll to the bottom happened above, so COLD is the expected word here.
+const h1 = await page.textContent('h1');
+h1?.trim() === 'SPIN' ? ok('h1 is SPIN') : fail(`h1: ${h1}`);
+(await page.$('nav.nav')) ? ok('shared nav present') : fail('no shared nav');
+(await page.$('a.nav-contact[href="mailto:hello@archaic.ie"]')) ? ok('plain mailto in the nav') : fail('no plain mailto in the nav');
+const word = (await page.textContent('#readout-word'))?.trim();
+word === 'COLD' ? ok('readout says COLD at the bottom') : fail(`readout at bottom: ${word}`);
+const posterAlt = await page.getAttribute('#poster', 'alt');
+posterAlt && posterAlt.length > 20 ? ok('poster has alt text') : fail('poster missing alt');
+const posterHidden = await page.evaluate(() => document.getElementById('poster').hidden);
+posterHidden ? ok('poster stood down once the lattice was live') : fail('poster still showing over a live lattice');
+/\d/.test(await page.textContent('#panel')) ? fail('digits in the panel') : ok('no digits in the panel');
+
 consoleErrors.length === 0 ? ok('no console errors') : fail(`console errors: ${consoleErrors.join(' | ')}`);
 
 await browser.close();

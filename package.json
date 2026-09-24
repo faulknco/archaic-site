@@ -14,7 +14,8 @@
     "qa:spin": "node scripts/qa-spin.mjs",
     "qa:parity": "node scripts/parity.mjs",
     "qa:lighthouse": "bash scripts/lighthouse.sh",
-    "qa:console": "node scripts/console-check.mjs"
+    "qa:console": "node scripts/console-check.mjs",
+    "poster:spin": "node scripts/poster-spin.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
@@ -24,6 +25,7 @@
   },
   "devDependencies": {
     "pixelmatch": "^7.2.0",
+    "sharp": "^0.35.4",
     "playwright": "^1.63.0",
     "pngjs": "^7.0.0"
   }

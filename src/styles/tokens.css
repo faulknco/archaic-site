@@ -7,7 +7,7 @@
      #333    --grey-32   #3a3a3a --grey-35   #4a4a4a --grey-41   #555    --grey-45
      #686868 --grey-52   #888    --grey-63   #e8e4d8 --bone
    Merged: #444 → --grey-41 (6/255 apart, one use), #8a8a8a → --grey-63 (2/255 apart).
-   Dropped: #b0b0b0 (spin caption hover; that caption is replaced in Task 12). */
+   Dropped: #b0b0b0 (spin caption hover; Task 12 replaced that caption). */
 :root {
   /* scale */
   --grey-12: oklch(12.21% 0 0);

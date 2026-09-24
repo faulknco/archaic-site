@@ -70,12 +70,8 @@ function compare() {
   if (failed) { console.error(`parity exceeded budget ${budget}% — inspect .parity/diff/`); process.exit(1); }
 }
 
-// /forge/spin is a gated, full-bleed art piece with no nav by design, so there is
-// no nav to fit. It is excluded by name, never by "the selector came back empty" —
-// the premise (that the page really has no nav) is asserted below, so a page that
-// silently loses its nav fails instead of quietly skipping.
-const NAVLESS = new Set(['/forge/spin/']);
-
+// Every page carries the shared nav now; /forge/spin was the last one without it
+// and Task 12 put it on Base, so there is no exclusion left here.
 async function navCheck() {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: VIEWPORTS.mobile, reducedMotion: 'reduce' });
@@ -96,15 +92,6 @@ async function navCheck() {
         vw: innerWidth,
       };
     });
-    if (NAVLESS.has(path)) {
-      // Excluded: assert the exclusion is still warranted, and that the page
-      // itself still fits the viewport.
-      const ok = !r.hasNav && r.docWidth <= r.vw;
-      if (!ok) failed = true;
-      const why = r.hasNav ? 'has a nav now — drop it from NAVLESS' : `doc=${r.docWidth} vw=${r.vw}`;
-      console.log(`${ok ? 'n/a ' : 'FAIL'} ${path.padEnd(14)} no nav by design; ${why}`);
-      continue;
-    }
     const ok = r.hasNav && r.docWidth <= r.vw && r.linksRight <= r.vw && r.emailRight <= r.vw && r.emailVisible;
     if (!ok) failed = true;
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${path.padEnd(14)} doc=${r.docWidth} links.right=${r.linksRight.toFixed(0)} email.right=${r.emailRight.toFixed(0)} vw=${r.vw}`);
