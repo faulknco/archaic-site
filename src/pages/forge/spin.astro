@@ -259,13 +259,18 @@ import Base from '../../layouts/Base.astro';
   // critical clusters stay honest; on in a window just below it, where the
   // domains are still mobile, so the ordered phase reliably picks ground; off
   // again once cold, so the last bone islands freeze in instead of eroding.
-  const T_C = 2.269, H_WINDOW = -0.015;
+  const T_C = 2.269, H_MID = -0.015, H_COLD = -0.005;
   const T_HOT_ = 5.0, T_COLD_ = 0.6;
+  // Zero at and above the critical point so the critical clusters are unbiased.
+  // Ramps in over 2.27 → 2.0, full strength while the domains are still mobile
+  // (2.0 → 1.4), then tapers towards the cold end: strong enough that a lattice
+  // quenched straight to the bottom still drifts to a ground majority within a
+  // few seconds, weak enough when cold that the last bone islands survive.
   const hFor = (T) => {
-    if (T >= T_C || T <= 1.4) return 0;
-    if (T >= 2.0) return H_WINDOW * (T_C - T) / (T_C - 2.0);  // ramp in 2.27 → 2.0
-    if (T >= 1.7) return H_WINDOW;                              // full 2.0 → 1.7
-    return H_WINDOW * (T - 1.4) / 0.3;                           // ramp out 1.7 → 1.4
+    if (T >= T_C) return 0;
+    if (T >= 2.0) return H_MID * (T_C - T) / (T_C - 2.0);
+    if (T >= 1.4) return H_MID;
+    return H_COLD + (H_MID - H_COLD) * Math.max(0, (T - T_COLD_) / (1.4 - T_COLD_));
   };
   const emaFor = (T) => EMA_COLD + (EMA_HOT - EMA_COLD) * Math.max(0, Math.min(1, (T - T_COLD_) / (T_HOT_ - T_COLD_)));
   const field = new Float32Array(N * N);
