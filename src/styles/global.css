@@ -127,7 +127,12 @@ html.hero, html.hero body { height: 100%; overflow: hidden; }
 .reveal.visible { opacity: 1; transform: translateY(0); }
 
 /* ── SHARED ANIMATION ── */
-@keyframes fadeUp { from { opacity: 0; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
+/* Starts faint rather than invisible. Chrome records no largest-contentful-paint
+   candidate for an element at opacity 0, and the homepage — the only page that
+   uses this — fades in every one of its above-the-fold elements, so the page
+   reported no LCP at all. 0.25 is enough for the first frame to paint something
+   the browser will measure; the rise, duration and easing are unchanged. */
+@keyframes fadeUp { from { opacity: 0.25; transform: translateY(14px); } to { opacity: 1; transform: translateY(0); } }
 
 /* ── MOBILE ── */
 @media (max-width: 640px) {
