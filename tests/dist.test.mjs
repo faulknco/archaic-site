@@ -28,11 +28,29 @@ for (const file of files) {
 // is a section to land on; before Task 13 it went to the homepage.
 const read = (p) => readFileSync(p, 'utf8');
 
-test('the spin gate goes back to /forge/', () => {
-  assert.match(read('dist/forge/spin/index.html'), /class="gate-back" href="\/forge\/"/);
+for (const piece of ['spin', 'critical']) {
+  test(`the ${piece} gate goes back to /forge/`, () => {
+    assert.match(read(`dist/forge/${piece}/index.html`), /class="gate-back" href="\/forge\/"/);
+  });
+}
+
+// The index lists both pieces, each by its own route.
+test('the forge index links both pieces', () => {
+  const html = read('dist/forge/index.html');
+  assert.match(html, /class="piece-link" href="\/forge\/spin\/"/);
+  assert.match(html, /class="piece-link" href="\/forge\/critical\/"/);
 });
 
-for (const page of ['dist/forge/index.html', 'dist/forge/spin/index.html']) {
+// Numbers are allowed on the instrument (temperatures, the magnetisation) and
+// nowhere in the prose: the two paragraphs under the bench carry no digits.
+test('the critical prose has no digits', () => {
+  const html = read('dist/forge/critical/index.html');
+  const prose = html.match(/<section class="prose"[^>]*>([\s\S]*?)<\/section>/);
+  assert.ok(prose, 'no prose section');
+  assert.doesNotMatch(prose[1].replace(/<[^>]+>/g, ''), /\d/);
+});
+
+for (const page of ['dist/forge/index.html', 'dist/forge/spin/index.html', 'dist/forge/critical/index.html']) {
   test(`${page}: the Forge nav link is current`, () => {
     assert.match(read(page), /<a class="nav-link" href="\/forge" aria-current="page">Forge<\/a>/);
   });

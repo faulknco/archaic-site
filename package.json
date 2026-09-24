@@ -12,10 +12,12 @@
     "astro": "astro",
     "test": "node --test 'tests/**/*.test.mjs'",
     "qa:spin": "node scripts/qa-spin.mjs",
+    "qa:critical": "node scripts/qa-critical.mjs",
     "qa:parity": "node scripts/parity.mjs",
     "qa:lighthouse": "bash scripts/lighthouse.sh",
     "qa:console": "node scripts/console-check.mjs",
-    "poster:spin": "node scripts/poster-spin.mjs"
+    "poster:spin": "node scripts/poster-spin.mjs",
+    "poster:critical": "node scripts/poster-critical.mjs"
   },
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",

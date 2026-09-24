@@ -190,26 +190,18 @@ import Base from '../../layouts/Base.astro';
   // is:inline because this imports runtime paths out of public/; Vite cannot
   // resolve them at build time and bundling the module breaks the worker URL.
   import { temperatureFor, readoutFor, T_HOT, T_COLD } from '/forge/spin/tmap.js';
+  import { wireGate, gateSeen, closeGate } from '/forge/shared/gate.js';
 
   // ---- gate, wired first --------------------------------------------------
   // The gate covers the whole page and only Continue dismisses it, so its
   // listener goes on before any other work in this module. Anything that throws
   // further down then costs the reader that feature, not the page: the
   // alternative is a reader trapped behind a warning they cannot dismiss.
+  // The gate itself (Continue, the session key, the Tab wrap) is shared with
+  // /forge/critical: accepting the notice on either piece covers both.
   const gate = document.getElementById('gate');
   const begin = document.getElementById('begin');
-  begin.addEventListener('click', () => {
-    try { sessionStorage.setItem('spin-gate', 'ok'); } catch {}
-    start();
-  });
-  // Keep keyboard focus inside the gate while it is open (Continue <-> Back).
-  gate.addEventListener('keydown', (e) => {
-    if (e.key !== 'Tab' || gate.classList.contains('closed')) return;
-    const focusable = Array.from(gate.querySelectorAll('button, a[href]'));
-    const first = focusable[0], lastItem = focusable[focusable.length - 1];
-    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); lastItem.focus(); }
-    else if (!e.shiftKey && document.activeElement === lastItem) { e.preventDefault(); first.focus(); }
-  });
+  wireGate({ gate, begin, onStart: () => start() });
 
   const N = 256;
   // The two spin states are the site's two colours, read from the tokens so
@@ -405,8 +397,7 @@ import Base from '../../layouts/Base.astro';
   let worker = null;
   function start() {
     if (worker) return;
-    document.body.classList.remove('gated');
-    document.getElementById('gate').classList.add('closed');
+    closeGate(gate);
     // The gate is down, so the page is reachable again: nav, panel controls and
     // the canvas all come out of `inert` together. Both routes past the gate —
     // the Continue click and the returning visitor's auto-start — run through
@@ -529,7 +520,5 @@ import Base from '../../layouts/Base.astro';
   // ---- gate: the second visit ---------------------------------------------
   // Wired at the top of the module; only the auto-start is left here, because it
   // calls start(), which needs everything above it to be initialised.
-  let seen = false;
-  try { seen = sessionStorage.getItem('spin-gate') === 'ok'; } catch {}
-  if (seen) start(); else begin.focus();
+  if (gateSeen()) start(); else begin.focus();
 </script>
