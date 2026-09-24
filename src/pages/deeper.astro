@@ -1,16 +1,5 @@
 ---
 import Base from '../layouts/Base.astro';
-import { getCollection, render } from 'astro:content';
-
-const articles = (await getCollection('journal'))
-  .sort((a, b) => new Date(b.data.date).getTime() - new Date(a.data.date).getTime());
-
-const rendered = await Promise.all(
-  articles.map(async (article) => {
-    const { Content } = await render(article);
-    return { article, Content };
-  })
-);
 ---
 <Base
   title="Deeper — Archaic"
@@ -77,19 +66,19 @@ const rendered = await Promise.all(
     <!-- Journal section -->
     <section class="section">
       <p class="section-label">Journal</p>
-      {rendered.length === 0 ? (
-        <p class="journal-empty reveal">Nothing yet. Articles will appear here.</p>
-      ) : (
-        rendered.map(({ article, Content }) => (
-          <article id={article.data.slug} class="journal-article reveal">
-            <h2 class="journal-article-title">{article.data.title}</h2>
-            <p class="journal-article-date">{article.data.date.toLocaleDateString('en-IE', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
-            <div class="journal-article-body">
-              <Content />
-            </div>
-          </article>
-        ))
-      )}
+      <p class="journal-note reveal">The writing lives on connorfaulkner.com. Two pieces started here.</p>
+      <ul class="journal-list">
+        <li id="irish-software-deserves-better" class="journal-item reveal">
+          <h2 class="journal-item-title"><a class="journal-item-link" href="https://connorfaulkner.com/blog/irish-software-deserves-better/" target="_blank" rel="noopener noreferrer">IRISH SOFTWARE DESERVES BETTER</a></h2>
+          <p class="journal-item-date">31 March 2026</p>
+          <p class="journal-item-desc">Try to do anything online in Ireland. The problem is who builds the systems, and who they are built for.</p>
+        </li>
+        <li id="what-built-to-last-means" class="journal-item reveal">
+          <h2 class="journal-item-title"><a class="journal-item-link" href="https://connorfaulkner.com/blog/what-built-to-last-means/" target="_blank" rel="noopener noreferrer">WHAT BUILT TO LAST MEANS</a></h2>
+          <p class="journal-item-date">31 March 2026</p>
+          <p class="journal-item-desc">Why the company is called Archaic. Newgrange still works. Most software does not survive the demo.</p>
+        </li>
+      </ul>
     </section>
 
     <!-- Contact CTA -->
@@ -225,60 +214,58 @@ const rendered = await Promise.all(
     transform: translateX(6px);
   }
 
-  /* ── JOURNAL (empty state) ── */
-  .journal-empty {
-    font-size: var(--fs-13);
-    color: var(--text-faint);
-    font-style: italic;
+  /* ── JOURNAL (link-out) ── */
+  .journal-note {
+    font-size: var(--fs-14);
+    color: var(--text);
+    line-height: var(--lh-body);
+    margin-bottom: var(--s-40);
   }
 
-  /* ── JOURNAL ARTICLE ── */
-  .journal-article {
-    margin-bottom: var(--s-64);
+  .journal-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
   }
 
-  .journal-article:last-child {
+  .journal-item {
+    margin-bottom: var(--s-40);
+  }
+
+  .journal-item:last-child {
     margin-bottom: 0;
   }
 
-  .journal-article-title {
+  .journal-item-title {
     font-family: var(--font-display);
     font-size: var(--fs-h2);
     font-weight: 400;
-    color: var(--text-display);
     letter-spacing: var(--ls-2);
     text-transform: uppercase;
     margin-bottom: var(--s-6);
   }
 
-  .journal-article-date {
+  .journal-item-link {
+    color: var(--text-display);
+    text-decoration: none;
+    transition: color 0.3s;
+  }
+
+  .journal-item-link:hover {
+    color: var(--text-cta);
+  }
+
+  .journal-item-date {
     font-size: var(--fs-11);
     color: var(--text-faint);
     letter-spacing: var(--ls-1);
-    margin-bottom: var(--s-24);
+    margin-bottom: var(--s-10);
   }
 
-  .journal-article-body {
+  .journal-item-desc {
     font-size: var(--fs-14);
     color: var(--text);
-    line-height: var(--lh-article);
-  }
-
-  /* Article bodies come from the content collection, so their <p> elements carry
-     no scope attribute and any rule for them has to reach through with :global().
-
-     `margin: 1em 0` is the browser default, reproduced on purpose. Before this
-     page moved onto Base its own reset and its own `.journal-article-body p`
-     rule were BOTH scoped, so neither ever matched a collection-rendered
-     paragraph and the journal has always rendered with UA margins. global.css
-     zeroes them for real, so the spacing has to be restated here.
-
-     It was `1em 0` through the migration, which at 14 px type meant 14 px of
-     air between paragraphs and no token behind it. Journal typography is being
-     revisited here on purpose: 16 px, off the space scale, like everything
-     else on the page. This is a visible change on /deeper only. */
-  .journal-article-body :global(p) {
-    margin: var(--s-16) 0;
+    line-height: var(--lh-body);
   }
 
   /* ── CONTACT CTA ── */
