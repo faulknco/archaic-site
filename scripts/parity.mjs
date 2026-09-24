@@ -70,6 +70,12 @@ function compare() {
   if (failed) { console.error(`parity exceeded budget ${budget}% — inspect .parity/diff/`); process.exit(1); }
 }
 
+// /forge/spin is a gated, full-bleed art piece with no nav by design, so there is
+// no nav to fit. It is excluded by name, never by "the selector came back empty" —
+// the premise (that the page really has no nav) is asserted below, so a page that
+// silently loses its nav fails instead of quietly skipping.
+const NAVLESS = new Set(['/forge/spin/']);
+
 async function navCheck() {
   const browser = await chromium.launch();
   const ctx = await browser.newContext({ viewport: VIEWPORTS.mobile, reducedMotion: 'reduce' });
@@ -78,9 +84,11 @@ async function navCheck() {
   for (const path of PAGES) {
     await page.goto(`${base}${path}`, { waitUntil: 'networkidle' });
     const r = await page.evaluate(() => {
+      const nav = document.querySelector('.nav');
       const links = document.querySelector('.nav-links');
       const email = document.querySelector('.nav-contact');
       return {
+        hasNav: !!nav,
         docWidth: document.documentElement.scrollWidth,
         linksRight: links ? links.getBoundingClientRect().right : -1,
         emailRight: email ? email.getBoundingClientRect().right : -1,
@@ -88,7 +96,16 @@ async function navCheck() {
         vw: innerWidth,
       };
     });
-    const ok = r.docWidth <= r.vw && r.linksRight <= r.vw && r.emailRight <= r.vw && r.emailVisible;
+    if (NAVLESS.has(path)) {
+      // Excluded: assert the exclusion is still warranted, and that the page
+      // itself still fits the viewport.
+      const ok = !r.hasNav && r.docWidth <= r.vw;
+      if (!ok) failed = true;
+      const why = r.hasNav ? 'has a nav now — drop it from NAVLESS' : `doc=${r.docWidth} vw=${r.vw}`;
+      console.log(`${ok ? 'n/a ' : 'FAIL'} ${path.padEnd(14)} no nav by design; ${why}`);
+      continue;
+    }
+    const ok = r.hasNav && r.docWidth <= r.vw && r.linksRight <= r.vw && r.emailRight <= r.vw && r.emailVisible;
     if (!ok) failed = true;
     console.log(`${ok ? 'ok  ' : 'FAIL'} ${path.padEnd(14)} doc=${r.docWidth} links.right=${r.linksRight.toFixed(0)} email.right=${r.emailRight.toFixed(0)} vw=${r.vw}`);
   }

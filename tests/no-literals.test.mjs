@@ -26,7 +26,18 @@ for (const file of files) {
   });
 }
 
-// The exclusion above must never quietly outlive the page it covers.
-test('the migration exclusion still points at a real file', () => {
-  for (const f of NOT_YET_MIGRATED) assert.ok(files.includes(f), `${f} no longer exists — drop it from NOT_YET_MIGRATED`);
+// The exclusion above must never quietly outlive the page it covers. Existing is
+// not enough: the file has to still carry the literals the exclusion exists for,
+// otherwise the todos above are excusing a page that is already clean.
+test('the migration exclusion still covers a file that still has literals', () => {
+  for (const f of NOT_YET_MIGRATED) {
+    assert.ok(files.includes(f), `${f} no longer exists — drop it from NOT_YET_MIGRATED`);
+    const src = readFileSync(f, 'utf8');
+    const hex = src.match(/#[0-9a-fA-F]{3}\b|#[0-9a-fA-F]{6}\b/g) || [];
+    const fonts = /font-family:\s*'(Cinzel|Space Grotesk|Uncial Antiqua)'/.test(src);
+    assert.ok(
+      hex.length > 0 || fonts,
+      `${f} has no hex colour or literal font stack left — it is already migrated, so drop it from NOT_YET_MIGRATED and enable the real assertions`,
+    );
+  }
 });
