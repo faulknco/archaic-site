@@ -291,13 +291,23 @@
     };
 
     // ---- gate ---------------------------------------------------------------
-    document.getElementById('begin').addEventListener('click', () => {
+    const gate = document.getElementById('gate');
+    const begin = document.getElementById('begin');
+    begin.addEventListener('click', () => {
       try { sessionStorage.setItem('spin-gate', 'ok'); } catch {}
       start();
     });
+    // Keep keyboard focus inside the gate while it is open (Continue <-> Back).
+    gate.addEventListener('keydown', (e) => {
+      if (e.key !== 'Tab' || gate.classList.contains('closed')) return;
+      const focusable = Array.from(gate.querySelectorAll('button, a[href]'));
+      const first = focusable[0], last = focusable[focusable.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
     let seen = false;
     try { seen = sessionStorage.getItem('spin-gate') === 'ok'; } catch {}
-    if (seen) start();
+    if (seen) start(); else begin.focus();
   </script>
 </body>
 </html>
