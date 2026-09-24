@@ -16,7 +16,7 @@ A handful of static pages, a short journal and one live piece, built with Astro 
 
 Every page renders through one shared layout, `src/layouts/Base.astro`, which owns the document head, the fonts, the nav and the footer. A page passes it a title, a description, a canonical path, a `layout` (`scroll`, `hero` or `spin`) and a `current` nav key. Page-specific styling stays in the page's own scoped `<style>` block.
 
-Colour, type, tracking and spacing all come from tokens in `src/styles/tokens.css`. Nothing else defines them: `npm test` fails the build on a hex literal or a hardcoded font stack anywhere in `src/`. Shared chrome styling lives in `src/styles/global.css`.
+Colour, type, tracking and spacing all come from tokens in `src/styles/tokens.css`. Nothing else defines them: `npm test` fails on a hex literal or a hardcoded font stack in any page, component or layout `.astro` file, or in either stylesheet under `src/styles/`. Both stylesheets carry hex in comments on purpose, documenting the values the tokens replaced, so CSS is scanned with comments stripped. Shared chrome styling lives in `src/styles/global.css`.
 
 ## Run
 
@@ -33,15 +33,17 @@ npm run preview   # http://127.0.0.1:4387 — the port the QA scripts default to
 npm test                       # tokens, tmap, no-literals, built-HTML invariants (build first)
 npm run qa:spin [url]          # Playwright: /forge/spin physics + page checks
 npm run qa:parity -- …         # capture baseline|after, compare, nav-check (local acceptance)
-npm run qa:console -- <url>    # zero console errors on every page (CSP check against a deploy)
+npm run qa:console -- <url>    # zero console errors + plain mailto on every page; CSP too, against a deploy
 npm run qa:lighthouse [url]    # desktop performance, prints LCP and its element
 ```
 
 Serve the build with `npm run preview` before running anything but `npm test`.
 
-CI runs `npm test`, the link check, `qa:parity -- nav-check` and `qa:spin` on every pull request.
+CI runs `npm test`, the link check, `qa:parity -- nav-check`, `qa:console` and `qa:spin` on every pull request.
 
-`qa:console` is not in CI and is a manual step before merging. It needs a real deploy: the response headers that carry the Content Security Policy live in `public/_headers`, which Cloudflare Pages applies and `astro preview` does not, so a local run proves nothing about the CSP. Once Pages posts the preview URL on the pull request:
+`qa:console` does two different jobs depending on what it is pointed at. Against the local preview, which is how CI runs it, it proves that every page's JavaScript runs clean and that the contact address is a plain `mailto:` in all seven pages of served HTML. It proves nothing there about the Content Security Policy: the policy lives in `public/_headers`, which Cloudflare Pages applies and `astro preview` serves as an inert static file.
+
+The CSP gate is the same script against a real deploy, and it is a manual step before merging. Once Pages posts the preview URL on the pull request:
 
 ```bash
 PREVIEW=https://<branch-hash>.archaic-site.pages.dev

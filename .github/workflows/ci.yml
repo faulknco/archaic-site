@@ -11,6 +11,9 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # The job backgrounds a preview server. If it ever hangs, this bounds the
+    # damage to ten minutes instead of the runner default of six hours.
+    timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
@@ -42,11 +45,32 @@ jobs:
       # `npm run preview` binds 127.0.0.1:4387, which is the port every QA
       # script defaults to. Serving anywhere else means passing the URL to each
       # one, so the script and the server agree on one port here.
+      # The server's output goes to a file, not to the step's stdout: a
+      # backgrounded process holding the runner's pipes open after the shell
+      # exits is a known cause of steps that hang to the job timeout. The loop
+      # exits 0 the moment the server answers and exits 1 if it never does —
+      # `break` would leave `sleep` as the last command and pass a dead server
+      # on to the browser steps, which then fail somewhere misleading.
       - name: Serve the build
         run: |
-          npm run preview &
-          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4387/ >/dev/null && break; sleep 1; done
+          npm run preview > /tmp/preview.log 2>&1 &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4387/ >/dev/null && exit 0; sleep 1; done
+          echo "preview never came up"; exit 1
       - name: Nav fits at 390
         run: npm run qa:parity -- nav-check
+      # Against the local preview this proves page JavaScript and the plain
+      # mailto on all seven pages — CI otherwise opens only /forge/spin in a
+      # browser. It proves nothing about the CSP: that lives in public/_headers,
+      # which Cloudflare Pages applies and astro preview serves as an inert
+      # static file. The CSP gate is the same script run against the Pages
+      # preview URL before merge; see the README.
+      - name: Console QA (page JavaScript, contact address)
+        run: npm run qa:console
       - name: Spin QA (physics sanity, gate, pause/reset, page semantics)
         run: npm run qa:spin
+      # Last, and `if: failure()`, so it fires for any failed step above: a
+      # server that never started, and equally one that died mid-run and took a
+      # browser gate down with it.
+      - name: Preview server log
+        if: failure()
+        run: cat /tmp/preview.log || echo "no preview log written"
