@@ -1,8 +1,8 @@
 // Pixel-parity harness for the layout migration.
-//   node scripts/parity.mjs capture baseline|after [--base http://localhost:4321]
+//   node scripts/parity.mjs capture baseline|after [--base http://127.0.0.1:4387]
 //   node scripts/parity.mjs compare [--budget 0.5]
-//   node scripts/parity.mjs nav-check [--base http://localhost:4321]
-// Serve the build first: `npm run build && npm run preview`.
+//   node scripts/parity.mjs nav-check [--base http://127.0.0.1:4387]
+// Serve the build first: `npm run build && npm run preview` (which listens on 4387).
 import { chromium } from 'playwright';
 import { PNG } from 'pngjs';
 import pixelmatch from 'pixelmatch';
@@ -14,7 +14,7 @@ const GROUND = { r: 6, g: 6, b: 6 };
 
 const [mode, arg] = process.argv.slice(2);
 const flag = (name, dflt) => { const i = process.argv.indexOf(name); return i > -1 ? process.argv[i + 1] : dflt; };
-const base = flag('--base', 'http://localhost:4321').replace(/\/$/, '');
+const base = flag('--base', 'http://127.0.0.1:4387').replace(/\/$/, '');
 const slug = (p) => p === '/' ? 'home' : p.replace(/\.html$/, '').replace(/^\/|\/$/g, '').replace(/\//g, '-');
 
 async function capture(set) {

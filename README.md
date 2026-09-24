@@ -20,7 +20,7 @@ Each page is a self-contained `.astro` file with its own styles and scripts. The
 npm install
 npm run dev       # http://localhost:4321
 npm run build     # output in dist/
-npm run preview
+npm run preview   # http://127.0.0.1:4387 — the port the QA scripts default to
 ```
 
 No secrets are needed to build. `.env.local` holds only a Cloudflare DNS token reference for DNS changes, not for the site.

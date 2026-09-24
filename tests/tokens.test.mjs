@@ -51,3 +51,21 @@ test('role tokens only reference the scale', () => {
     assert.match(tokens[role], /^var\(--(grey-\d+|bone)\)$/, `${role} = ${tokens[role]}`);
   }
 });
+
+// /forge/spin paints its two spin states into a canvas, so it reads --bone-rgb
+// and --ground-rgb at runtime rather than repeating them. It carries a written
+// fallback for the case where a token goes missing, because throwing there took
+// the whole module down and left the photosensitivity gate undismissable. That
+// fallback is the one place a colour is still written twice; this keeps the two
+// copies honest.
+test('the spin page fallback colours match the tokens they stand in for', () => {
+  const page = readFileSync(new URL('../src/pages/forge/spin.astro', import.meta.url), 'utf8');
+  for (const [constant, token] of [['BONE_FALLBACK', '--bone-rgb'], ['GROUND_FALLBACK', '--ground-rgb']]) {
+    const m = page.match(new RegExp(`const ${constant} = \\[([^\\]]+)\\]`));
+    assert.ok(m, `${constant} not found in spin.astro — if the fallback is gone, drop this test`);
+    const got = m[1].split(',').map((n) => Number(n.trim()));
+    const want = tokens[token].split(/\s+/).map(Number);
+    assert.equal(got.length, 3, `${constant} is not a three-part triplet`);
+    assert.deepEqual(got, want, `${constant} is [${got}] but ${token} is [${want}]`);
+  }
+});

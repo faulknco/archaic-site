@@ -1,6 +1,8 @@
 // Loads every page and fails on any console error or page error.
-// CSP violations surface as console errors, so run this against the
-// Cloudflare Pages preview URL before merging: node scripts/console-check.mjs https://<preview>.pages.dev
+// Usage: node scripts/console-check.mjs [baseUrl]   (default http://127.0.0.1:4387,
+// the port `npm run preview` listens on). CSP violations surface as console
+// errors, so also run it against the deployed URL before merging:
+//   node scripts/console-check.mjs https://<preview>.pages.dev
 //
 // It also guards the contact address at the edge. Cloudflare's Email Address
 // Obfuscation rewrites every mailto into /cdn-cgi/l/email-protection# plus an
@@ -11,7 +13,7 @@
 import { chromium } from 'playwright';
 import { PAGES } from './parity.mjs';
 
-const base = (process.argv[2] || 'http://localhost:4321').replace(/\/$/, '');
+const base = (process.argv[2] || 'http://127.0.0.1:4387').replace(/\/$/, '');
 const browser = await chromium.launch();
 const page = await browser.newPage();
 const errors = [];
