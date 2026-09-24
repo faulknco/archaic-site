@@ -94,6 +94,9 @@ const bottom = await page.evaluate(() => window.__spin.sample());
 let settled = bottom.upFraction;
 for (let i = 0; i < 6 && settled >= 0.45; i++) {
   await page.waitForTimeout(2000);
+  // The idle drift starts scrolling after 15 s without input; keep the page pinned
+  // at the bottom so the lattice stays cold for the whole poll.
+  await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
   settled = (await page.evaluate(() => window.__spin.sample())).upFraction;
 }
 settled < 0.45 ? ok(`bottom settles dark (upFraction ${settled.toFixed(3)})`) : fail(`bottom did not settle dark within 18 s: upFraction ${settled}`);
@@ -101,6 +104,7 @@ const renderer = await page.evaluate(() => window.__spin.renderer);
 renderer === 'webgl' || renderer === 'canvas' ? ok(`renderer: ${renderer}`) : fail(`renderer: ${renderer}`);
 bottom.agreement > 0.9 ? ok(`bottom agreement ${bottom.agreement.toFixed(3)} (domains)`) : fail(`bottom agreement ${bottom.agreement}`);
 
+await page.evaluate(() => scrollTo(0, document.documentElement.scrollHeight));
 const T = await page.evaluate(() => window.__spin.temperature());
 Math.abs(T - 0.6) < 1e-6 ? ok('bottom temperature is the cold end') : fail(`bottom T ${T}`);
 
