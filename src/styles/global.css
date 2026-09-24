@@ -140,6 +140,14 @@ html.hero, html.hero body { height: 100%; overflow: hidden; }
   #cursor-glow { display: none; }
 }
 
+/* ── CROSS-DOCUMENT VIEW TRANSITIONS ── (Chrome 126+, Safari 18.2+; others navigate normally) */
+@media (prefers-reduced-motion: no-preference) {
+  @view-transition { navigation: auto; }
+  ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.3s; animation-timing-function: ease; }
+  .nav    { view-transition-name: site-nav; }
+  .footer { view-transition-name: site-footer; }
+}
+
 /* ── ACCESSIBILITY ── */
 a:focus-visible, button:focus-visible { outline: 1px solid var(--focus); outline-offset: 4px; }
 
