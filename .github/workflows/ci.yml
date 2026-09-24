@@ -18,7 +18,13 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # The Fonts API downloads the four woff2 faces from Fontsource at build
+      # time. They are not cached on purpose: npm ci wipes node_modules/.astro
+      # anyway, the job already needs network for npm and Playwright, and a
+      # cache keyed wrong is a worse failure than a refetch of four small files.
       - run: npm run build
+      - name: Unit and built-HTML tests
+        run: npm test
       - name: Check links in built HTML
         uses: lycheeverse/lychee-action@v2
         with:
@@ -31,3 +37,16 @@ jobs:
             --no-progress
             "dist/**/*.html"
           fail: true
+      - name: Install Chromium for Playwright
+        run: npx playwright install --with-deps chromium
+      # `npm run preview` binds 127.0.0.1:4387, which is the port every QA
+      # script defaults to. Serving anywhere else means passing the URL to each
+      # one, so the script and the server agree on one port here.
+      - name: Serve the build
+        run: |
+          npm run preview &
+          for i in $(seq 1 30); do curl -sf http://127.0.0.1:4387/ >/dev/null && break; sleep 1; done
+      - name: Nav fits at 390
+        run: npm run qa:parity -- nav-check
+      - name: Spin QA (physics sanity, gate, pause/reset, page semantics)
+        run: npm run qa:spin
