@@ -56,6 +56,14 @@
   }
   canvas.lattice.live { opacity: 1; }
 
+  /* Edge vignette so the mark, caption and button stay legible over bone. */
+  .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(to bottom, rgba(6,6,6,0.85), rgba(6,6,6,0) 160px),
+      linear-gradient(to top, rgba(6,6,6,0.9), rgba(6,6,6,0) 180px);
+  }
+
   .mark {
     position: fixed; top: 32px; left: 40px; z-index: 2;
     display: block; height: 72px; width: auto; opacity: 0.85;
@@ -94,6 +102,7 @@
 </head>
 <body>
   <canvas class="lattice" id="lattice" aria-label="A live two-dimensional Ising model" role="img"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
   <div class="track" aria-hidden="true"></div>
 
   <a class="mark" href="/" aria-label="Archaic home"><img src="/logo.webp" alt="Archaic" /></a>
