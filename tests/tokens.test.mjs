@@ -58,14 +58,21 @@ test('role tokens only reference the scale', () => {
 // the whole module down and left the photosensitivity gate undismissable. That
 // fallback is the one place a colour is still written twice; this keeps the two
 // copies honest.
-test('the spin page fallback colours match the tokens they stand in for', () => {
-  const page = readFileSync(new URL('../src/pages/forge/spin.astro', import.meta.url), 'utf8');
-  for (const [constant, token] of [['BONE_FALLBACK', '--bone-rgb'], ['GROUND_FALLBACK', '--ground-rgb']]) {
-    const m = page.match(new RegExp(`const ${constant} = \\[([^\\]]+)\\]`));
-    assert.ok(m, `${constant} not found in spin.astro — if the fallback is gone, drop this test`);
-    const got = m[1].split(',').map((n) => Number(n.trim()));
-    const want = tokens[token].split(/\s+/).map(Number);
-    assert.equal(got.length, 3, `${constant} is not a three-part triplet`);
-    assert.deepEqual(got, want, `${constant} is [${got}] but ${token} is [${want}]`);
-  }
-});
+// /forge/rule110 paints its cells the same way and carries the same three
+// fallbacks, so both pages are held to the tokens here.
+for (const [file, constants] of [
+  ['spin.astro', [['BONE_FALLBACK', '--bone-rgb'], ['GROUND_FALLBACK', '--ground-rgb']]],
+  ['rule110.astro', [['BONE_FALLBACK', '--bone-rgb'], ['GROUND_FALLBACK', '--ground-rgb'], ['COPPER_FALLBACK', '--copper-rgb']]],
+]) {
+  test(`the ${file} fallback colours match the tokens they stand in for`, () => {
+    const page = readFileSync(new URL(`../src/pages/forge/${file}`, import.meta.url), 'utf8');
+    for (const [constant, token] of constants) {
+      const m = page.match(new RegExp(`const ${constant} = \\[([^\\]]+)\\]`));
+      assert.ok(m, `${constant} not found in ${file} — if the fallback is gone, drop this test`);
+      const got = m[1].split(',').map((n) => Number(n.trim()));
+      const want = tokens[token].split(/\s+/).map(Number);
+      assert.equal(got.length, 3, `${constant} is not a three-part triplet`);
+      assert.deepEqual(got, want, `${constant} is [${got}] but ${token} is [${want}]`);
+    }
+  });
+}
