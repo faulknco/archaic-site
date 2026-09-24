@@ -1,6 +1,11 @@
 ---
 // Spin — a live 2D Ising model. Scroll is temperature.
 // Spec: docs/superpowers/specs/2026-09-24-spin-design.md
+// Still the old self-contained page; Task 12 puts it on Base and on the tokens.
+// Its fonts already come from the shared Astro Fonts config, because Task 8 drops
+// the Google Fonts origins from the CSP and a page left on fonts.gstatic.com
+// would render in fallback faces with a console CSP violation.
+import { Font } from 'astro:assets';
 ---
 <!DOCTYPE html>
 <html lang="en">
@@ -31,16 +36,15 @@
     plausible.init()
   </script>
 
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
+  <Font cssVariable="--font-cinzel" preload />
+  <Font cssVariable="--font-grotesk" preload />
   <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   html { background: #060606; }
   body {
     background: #060606;
     color: #686868;
-    font-family: 'Space Grotesk', system-ui, sans-serif;
+    font-family: var(--font-grotesk);
     -webkit-font-smoothing: antialiased;
     overscroll-behavior: none;
   }
@@ -98,7 +102,7 @@
   .gate.closed { display: none; }
   .gate-inner { max-width: 44ch; }
   .gate-title {
-    font-family: 'Cinzel', serif; text-transform: uppercase;
+    font-family: var(--font-cinzel); text-transform: uppercase;
     font-size: clamp(18px, 2.5vw, 24px); letter-spacing: 2px; color: #e8e4d8;
     margin-bottom: 20px;
   }

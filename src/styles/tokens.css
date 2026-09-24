@@ -52,10 +52,11 @@
   --focus:        var(--grey-63);
   --text-display: var(--bone);
 
-  /* type — Task 8 swaps the stacks for the Astro Fonts variables */
-  --font-display: 'Cinzel', serif;
-  --font-body:    'Space Grotesk', sans-serif;
-  --font-ghost:   'Uncial Antiqua', serif;
+  /* type — the stacks come from the Astro Fonts API (astro.config.mjs), which
+     appends a metric-matched fallback family to each one. */
+  --font-display: var(--font-cinzel);
+  --font-body:    var(--font-grotesk);
+  --font-ghost:   var(--font-uncial);
   --fs-9: 9px;  --fs-10: 10px; --fs-11: 11px; --fs-12: 12px; --fs-13: 13px; --fs-14: 14px;
   --fs-h2:   clamp(18px, 2.5vw, 24px);
   --fs-h1:   clamp(28px, 4vw, 48px);

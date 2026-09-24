@@ -13,6 +13,7 @@
     "test": "node --test tests/",
     "qa:spin": "node scripts/qa-spin.mjs",
     "qa:parity": "node scripts/parity.mjs",
+    "qa:lighthouse": "bash scripts/lighthouse.sh",
     "qa:console": "node scripts/console-check.mjs"
   },
   "dependencies": {
