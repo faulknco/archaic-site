@@ -1,0 +1,303 @@
+---
+// Spin — a live 2D Ising model. Scroll is temperature.
+// Spec: docs/superpowers/specs/2026-09-24-spin-design.md
+---
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Spin — Archaic</title>
+  <meta name="description" content="A two-dimensional Ising model running live in your browser. Scroll to cool it from noise, through the critical point, into frozen domains." />
+  <link rel="canonical" href="https://archaic.ie/forge/spin/" />
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://archaic.ie/forge/spin/" />
+  <meta property="og:title" content="Spin — Archaic" />
+  <meta property="og:description" content="A two-dimensional Ising model running live in your browser. Scroll to cool it." />
+  <meta property="og:image" content="https://archaic.ie/forge/spin/og.png" />
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Spin — Archaic" />
+  <meta name="twitter:description" content="A two-dimensional Ising model running live in your browser. Scroll to cool it." />
+  <meta name="twitter:image" content="https://archaic.ie/forge/spin/og.png" />
+
+  <script async src="https://plausible.io/js/pa-KH7rq97DQVWnsgrzlvbnO.js"></script>
+  <script is:inline>
+    window.plausible=window.plausible||function(){(plausible.q=plausible.q||[]).push(arguments)},plausible.init=plausible.init||function(i){plausible.o=i||{}};
+    plausible.init()
+  </script>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400&family=Space+Grotesk:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { background: #060606; }
+  body {
+    background: #060606;
+    color: #686868;
+    font-family: 'Space Grotesk', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    overscroll-behavior: none;
+  }
+  /* Scroll track: only provides scroll length. */
+  .track { height: 600vh; width: 100%; pointer-events: none; }
+
+  canvas.lattice {
+    position: fixed; inset: 0;
+    width: 100vw; height: 100vh;
+    display: block;
+    image-rendering: pixelated;
+    opacity: 0; transition: opacity 0.6s ease;
+  }
+  canvas.lattice.live { opacity: 1; }
+
+  /* Edge vignette so the mark, caption and button stay legible over bone. */
+  .vignette {
+    position: fixed; inset: 0; z-index: 1; pointer-events: none;
+    background:
+      linear-gradient(to bottom, rgba(6,6,6,0.85), rgba(6,6,6,0) 160px),
+      linear-gradient(to top, rgba(6,6,6,0.9), rgba(6,6,6,0) 180px);
+  }
+
+  .mark {
+    position: fixed; top: 32px; left: 40px; z-index: 2;
+    display: block; height: 72px; width: auto; opacity: 0.85;
+  }
+  .mark img { display: block; height: 72px; width: auto; }
+
+  .caption {
+    position: fixed; left: 40px; bottom: 32px; z-index: 2;
+    font-size: 11px; line-height: 1.7; letter-spacing: 0.3px;
+    color: #686868; max-width: 46ch;
+    text-shadow: 0 0 12px #060606, 0 0 4px #060606;
+  }
+  .caption a { color: #8a8a8a; text-decoration: none; border-bottom: 1px solid #333; }
+  .caption a:hover { color: #b0b0b0; }
+
+  .save {
+    position: fixed; right: 40px; bottom: 36px; z-index: 2;
+    font: inherit; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    color: #4a4a4a; background: none; border: 0; cursor: pointer;
+    text-shadow: 0 0 12px #060606, 0 0 4px #060606;
+    transition: color 0.3s;
+  }
+  .save:hover { color: #888; }
+
+  /* Photosensitivity gate: shown before anything moves. */
+  .gate {
+    position: fixed; inset: 0; z-index: 3;
+    background: #060606;
+    display: flex; align-items: center; justify-content: center;
+    padding: 24px;
+  }
+  .gate.closed { display: none; }
+  .gate-inner { max-width: 44ch; }
+  .gate-title {
+    font-family: 'Cinzel', serif; text-transform: uppercase;
+    font-size: clamp(18px, 2.5vw, 24px); letter-spacing: 2px; color: #e8e4d8;
+    margin-bottom: 20px;
+  }
+  .gate-text { font-size: 13px; line-height: 1.75; color: #686868; margin-bottom: 32px; }
+  .gate-actions { display: flex; gap: 32px; align-items: center; }
+  .gate-continue, .gate-back {
+    font: inherit; font-size: 10px; letter-spacing: 2px; text-transform: uppercase;
+    background: none; border: 0; cursor: pointer; text-decoration: none;
+    color: #8a8a8a; transition: color 0.3s;
+  }
+  .gate-continue:hover, .gate-back:hover { color: #e8e4d8; }
+  body.gated { overflow: hidden; }
+
+  a:focus-visible, button:focus-visible { outline: 1px solid #8a8a8a; outline-offset: 4px; }
+
+  @media (max-width: 640px) {
+    .mark { top: 20px; left: 20px; } .mark img { height: 56px; }
+    .caption { left: 20px; bottom: 24px; right: 96px; max-width: none; }
+    .save { right: 20px; bottom: 28px; }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    canvas.lattice { transition: none; }
+  }
+  </style>
+</head>
+<body class="gated">
+  <div class="gate" id="gate" role="dialog" aria-modal="true" aria-labelledby="gate-title">
+    <div class="gate-inner">
+      <p class="gate-title" id="gate-title">THIS PAGE FLASHES</p>
+      <p class="gate-text">It is a live physical simulation. At its hottest it becomes a rapidly flickering pattern across the whole screen. If flashing light affects you, go back.</p>
+      <div class="gate-actions">
+        <button class="gate-continue" id="begin" type="button">Continue</button>
+        <a class="gate-back" href="/">Back</a>
+      </div>
+    </div>
+  </div>
+
+  <canvas class="lattice" id="lattice" aria-label="A live two-dimensional Ising model" role="img"></canvas>
+  <div class="vignette" aria-hidden="true"></div>
+  <div class="track" aria-hidden="true"></div>
+
+  <a class="mark" href="/" aria-label="Archaic home"><img src="/logo.webp" alt="Archaic" /></a>
+
+  <p class="caption">
+    A two-dimensional Ising model, running live in your browser. Scroll to cool it.
+    <a href="https://github.com/faulknco/ising-rs" target="_blank" rel="noopener noreferrer">Source</a>
+  </p>
+
+  <button class="save" id="save" type="button">Save</button>
+
+  <script type="module" is:inline>
+    import { temperatureFor } from '/forge/spin/tmap.js';
+
+    const N = 256;
+    const UP = [0xe8, 0xe4, 0xd8];
+    const DOWN = [0x06, 0x06, 0x06];
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const canvas = document.getElementById('lattice');
+    const ctx = canvas.getContext('2d', { alpha: false });
+    const back = document.createElement('canvas');
+    back.width = N; back.height = N;
+    const bctx = back.getContext('2d', { alpha: false });
+    const img = bctx.createImageData(N, N);
+
+    let last = null;          // Int8Array of the last frame
+    let frames = 0;
+    let pending = false;      // a tick is in flight
+    let visible = !document.hidden;
+
+    // ---- rendering -------------------------------------------------------
+    function resize() {
+      const dpr = Math.min(devicePixelRatio || 1, 2);
+      canvas.width = Math.round(innerWidth * dpr);
+      canvas.height = Math.round(innerHeight * dpr);
+      ctx.imageSmoothingEnabled = false;
+      if (last) paint();
+    }
+    function paint() {
+      const d = img.data;
+      for (let i = 0, j = 0; i < last.length; i++, j += 4) {
+        const c = last[i] > 0 ? UP : DOWN;
+        d[j] = c[0]; d[j + 1] = c[1]; d[j + 2] = c[2]; d[j + 3] = 255;
+      }
+      bctx.putImageData(img, 0, 0);
+      const side = Math.max(canvas.width, canvas.height);
+      const x = (canvas.width - side) / 2, y = (canvas.height - side) / 2;
+      ctx.imageSmoothingEnabled = false;
+      ctx.drawImage(back, x, y, side, side);
+    }
+    addEventListener('resize', resize);
+    resize();
+
+    // ---- scroll → temperature -------------------------------------------
+    function scrollFraction() {
+      const max = document.documentElement.scrollHeight - innerHeight;
+      return max > 0 ? scrollY / max : 0;
+    }
+    const temperature = () => temperatureFor(scrollFraction());
+
+    // ---- worker (started only after the gate) -----------------------------
+    let worker = null;
+    function start() {
+      if (worker) return;
+      document.body.classList.remove('gated');
+      document.getElementById('gate').classList.add('closed');
+      worker = new Worker('/forge/spin/worker.js', { type: 'module' });
+      worker.onmessage = onWorkerMessage;
+      worker.onerror = (e) => console.error('spin worker failed:', e.message);
+      worker.postMessage({ type: 'init', n: N, seed: Date.now() % 4294967296, maxSweeps: reduced ? 1 : 4 });
+      armIdle();
+    }
+    function onWorkerMessage(e) {
+      const m = e.data;
+      if (m.type === 'ready') { pending = false; loop(); return; }
+      if (m.type === 'frame') {
+        last = new Int8Array(m.spins);
+        frames++;
+        paint();
+        if (frames === 1) canvas.classList.add('live');
+        pending = false;
+        return;
+      }
+      if (m.type === 'error') console.error('spin worker:', m.message);
+    }
+
+    function loop() {
+      if (!visible || !worker) return;
+      if (!pending) { pending = true; worker.postMessage({ type: 'tick', T: temperature() }); }
+      requestAnimationFrame(loop);
+    }
+    document.addEventListener('visibilitychange', () => {
+      visible = !document.hidden;
+      if (visible) loop();
+    });
+
+    // ---- idle drift -------------------------------------------------------
+    const IDLE_MS = 15000;
+    let idleTimer = null, drifting = false, dir = 1, selfScroll = false;
+    function drift() {
+      if (!drifting) return;
+      const max = document.documentElement.scrollHeight - innerHeight;
+      if (scrollY >= max - 1) dir = -1; else if (scrollY <= 1) dir = 1;
+      selfScroll = true;
+      scrollBy(0, dir * 0.6);
+      requestAnimationFrame(() => { selfScroll = false; drift(); });
+    }
+    function armIdle() {
+      drifting = false;
+      clearTimeout(idleTimer);
+      if (reduced || !worker) return;
+      idleTimer = setTimeout(() => { drifting = true; drift(); }, IDLE_MS);
+    }
+    for (const ev of ['wheel', 'touchstart', 'pointerdown', 'keydown']) addEventListener(ev, armIdle, { passive: true });
+    addEventListener('scroll', () => { if (!selfScroll) armIdle(); }, { passive: true });
+
+    // ---- save -------------------------------------------------------------
+    document.getElementById('save').addEventListener('click', () => {
+      if (!last) return;
+      const out = document.createElement('canvas');
+      out.width = canvas.width; out.height = canvas.height;
+      const octx = out.getContext('2d', { alpha: false });
+      octx.imageSmoothingEnabled = false;
+      const side = Math.max(out.width, out.height);
+      octx.drawImage(back, (out.width - side) / 2, (out.height - side) / 2, side, side);
+      out.toBlob((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'archaic-spin.png';
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+      }, 'image/png');
+    });
+
+    // ---- test hook --------------------------------------------------------
+    window.__spin = {
+      get frames() { return frames; },
+      temperature,
+      sample() {
+        if (!last) return null;
+        let up = 0, agree = 0;
+        for (let y = 0; y < N; y++) for (let x = 0; x < N; x++) {
+          const s = last[y * N + x];
+          if (s > 0) up++;
+          const r = last[y * N + ((x + 1) % N)], d = last[((y + 1) % N) * N + x];
+          if (r === s) agree++; if (d === s) agree++;
+        }
+        return { upFraction: up / (N * N), agreement: agree / (2 * N * N) };
+      },
+    };
+
+    // ---- gate ---------------------------------------------------------------
+    document.getElementById('begin').addEventListener('click', () => {
+      try { sessionStorage.setItem('spin-gate', 'ok'); } catch {}
+      start();
+    });
+    let seen = false;
+    try { seen = sessionStorage.getItem('spin-gate') === 'ok'; } catch {}
+    if (seen) start();
+  </script>
+</body>
+</html>

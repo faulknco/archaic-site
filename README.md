@@ -10,6 +10,7 @@ Three static pages and a short journal, built with Astro and deployed to Cloudfl
 - `/deeper` — case studies of live products, plus journal articles rendered from `src/content/journal/`
 - `/services` — what the studio does, in broad terms
 - `/404` — custom not-found page
+- `/forge/spin` — live 2D Ising model art piece (vendored ising-rs WebAssembly; see `scripts/vendor-ising.sh`, `npm run qa:spin`)
 
 Each page is a self-contained `.astro` file with its own styles and scripts. There is no shared layout on purpose.
 
