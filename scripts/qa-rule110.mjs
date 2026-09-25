@@ -47,8 +47,10 @@ const stillInert = await page.evaluate(() => document.querySelectorAll('[inert]'
 stillInert === 0 ? ok('inert lifted once the gate was dismissed') : fail(`${stillInert} regions still inert after Continue`);
 const gateGone = await page.evaluate(() => getComputedStyle(document.getElementById('gate')).display === 'none' && !document.body.classList.contains('gated'));
 gateGone ? ok('gate closed and the page scrolls again') : fail('gate still shown or body still gated');
-const seen = await page.evaluate(() => { try { return sessionStorage.getItem('spin-gate'); } catch { return null; } });
-seen === 'ok' ? ok('acceptance stored under the shared spin-gate key') : fail(`sessionStorage spin-gate = ${seen}`);
+const seen = await page.evaluate(() => { try { return sessionStorage.getItem('rule110-gate'); } catch { return null; } });
+seen === 'ok' ? ok('acceptance stored under the rule110-gate key') : fail(`sessionStorage rule110-gate = ${seen}`);
+const spinKey = await page.evaluate(() => { try { return sessionStorage.getItem('spin-gate'); } catch { return null; } });
+spinKey === null ? ok('accepting Rule 110 does not clear the flashing gates') : fail(`spin-gate = ${spinKey} after Rule 110 Continue`);
 
 // ---- the tape advances ------------------------------------------------------
 await page.waitForFunction(() => window.__rule110.generation > 40, null, { timeout: 15000 });

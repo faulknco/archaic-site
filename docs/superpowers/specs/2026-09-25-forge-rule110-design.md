@@ -42,7 +42,7 @@ Two paragraphs under the panel, in the site voice: short declarative sentences, 
 
 ## Accessibility
 
-- Photosensitivity gate reused from Spin: same markup, same `sessionStorage` key `spin-gate`, so one acceptance covers every piece this session. The title is "THIS PAGE MOVES" and the text says plainly that it does not flash but that continuing also opens Spin, which does. Everything behind the gate is `inert` until Continue, including the nav (same inline script as Spin), and focus is trapped inside it.
+- Photosensitivity gate reused from Spin: same markup, but its own `sessionStorage` key `rule110-gate`, so accepting this mild notice never clears Spin's or Critical's flashing gates (changed 2026-09-25 from a shared key). The title is "THIS PAGE MOVES" and the text says plainly that it does not flash. Everything behind the gate is `inert` until Continue, including the nav (same inline script as Spin), and focus is trapped inside it.
 - `prefers-reduced-motion: reduce`: the page renders a fixed 400-row diagram once and never animates. Seed and drawing controls redraw it; the Play button reads Redraw and does the same.
 - Every control has a visible label or an `aria-label`; the tape canvas is `aria-hidden` with the poster's `alt` and the text carrying the meaning; the seed strip is a focusable `role="application"` with an `aria-describedby` hint.
 - Mobile at 390 px: 2 px cells, the panel wraps, no horizontal scroll.

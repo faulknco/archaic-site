@@ -52,8 +52,8 @@ await page.click('#begin');
 const stillInert = await page.evaluate(() => document.querySelectorAll('[inert]').length);
 stillInert === 0 ? ok('inert lifted once the gate was dismissed') : fail(`${stillInert} regions still inert after Continue`);
 (await navFocusable()) ? ok('nav takes focus once the gate is dismissed') : fail('nav still refuses focus after Continue');
-const gateKey = await page.evaluate(() => { try { return sessionStorage.getItem('spin-gate'); } catch { return null; } });
-gateKey === 'ok' ? ok("Continue remembered under Spin's key") : fail(`gate key: ${gateKey}`);
+const gateKey = await page.evaluate(() => { try { return sessionStorage.getItem('critical-gate'); } catch { return null; } });
+gateKey === 'ok' ? ok("Continue remembered under Critical's own key") : fail(`gate key: ${gateKey}`);
 
 const wasmStatus = (await wasm).status();
 wasmStatus === 200 ? ok('wasm served 200') : fail(`wasm status ${wasmStatus}`);
