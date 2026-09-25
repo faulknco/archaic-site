@@ -1,27 +1,28 @@
 // The photosensitivity gate shared by the Forge pieces. Lifted out of
-// /forge/spin unchanged in behaviour: one sessionStorage key, so accepting the
-// notice on either piece covers both for the browser session; and a Tab wrap so
-// keyboard focus stays inside the gate while it is open.
+// /forge/spin: each piece passes its own sessionStorage key, so accepting the
+// notice on one piece covers only that piece for the browser session (a mild
+// notice must never clear a flashing one); and a Tab wrap so keyboard focus
+// stays inside the gate while it is open.
 //
 // Everything behind the gate is expected to be `inert` already (the page owns
 // that, because what is behind the gate differs from piece to piece); this
 // module only handles the gate itself.
-export const GATE_KEY = 'spin-gate';
+export const GATE_KEY = 'spin-gate'; // Spin's key; other pieces pass their own
 
 // Whether the visitor has already accepted the notice in this session.
 // sessionStorage can throw (private windows, storage disabled); a throw means
 // "not seen", never a broken page.
-export function gateSeen() {
-  try { return sessionStorage.getItem(GATE_KEY) === 'ok'; } catch { return false; }
+export function gateSeen(key = GATE_KEY) {
+  try { return sessionStorage.getItem(key) === 'ok'; } catch { return false; }
 }
 
 // Wire Continue and the focus trap. Call this before any other work in the
 // page module: anything that throws further down then costs the reader that
 // feature, not the page — the alternative is a reader trapped behind a warning
 // they cannot dismiss. `onStart` runs when Continue is pressed.
-export function wireGate({ gate, begin, onStart }) {
+export function wireGate({ gate, begin, onStart, key = GATE_KEY }) {
   begin.addEventListener('click', () => {
-    try { sessionStorage.setItem(GATE_KEY, 'ok'); } catch {}
+    try { sessionStorage.setItem(key, 'ok'); } catch {}
     onStart();
   });
   gate.addEventListener('keydown', (e) => {
