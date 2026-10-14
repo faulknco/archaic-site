@@ -24,13 +24,13 @@
   "dependencies": {
     "@astrojs/sitemap": "^3.7.4",
     "@tailwindcss/vite": "^4.3.3",
-    "astro": "^7.3.4",
+    "astro": "^7.3.8",
     "tailwindcss": "^4.2.2"
   },
   "devDependencies": {
     "pixelmatch": "^7.2.0",
-    "sharp": "^0.35.4",
-    "playwright": "^1.63.0",
+    "sharp": "^0.35.5",
+    "playwright": "^1.64.0",
     "pngjs": "^7.0.0"
   }
 }
